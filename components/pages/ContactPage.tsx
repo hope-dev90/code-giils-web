@@ -14,7 +14,7 @@ const B_SEND:   HotspotDef = h(700, 748, 240,  65);
 interface Props {
   onHome: () => void; onAbout: () => void; onNatural: () => void;
   onWater: () => void; onStats: () => void; onContact: () => void;
-  onArticles: () => void; onLogout: () => void;
+  onArticles: () => void; onLogout: () => void; onSanctuary?: () => void;
 }
 
 function openMail() {
@@ -23,7 +23,7 @@ function openMail() {
   window.location.href = `mailto:info@umucocore.rw?subject=${subject}&body=${body}`;
 }
 
-export default function ContactPage({ onHome, onAbout, onNatural, onWater, onStats, onContact, onLogout }: Props) {
+export default function ContactPage({ onHome, onAbout, onNatural, onWater, onStats, onContact, onLogout, onSanctuary }: Props) {
   return (
     <ImagePage image="/contact-us.png" iw={IW} ih={IH}>
       <Hotspot def={B_HOME}          onClick={onHome}    label="Home" />
@@ -32,6 +32,7 @@ export default function ContactPage({ onHome, onAbout, onNatural, onWater, onSta
       <Hotspot def={NAV_1024.water}  onClick={onWater}   label="Water Products" />
       <Hotspot def={NAV_1024.stats}  onClick={onStats}   label="Product Stats" />
       <Hotspot def={NAV_1024.contact}onClick={onContact} label="Contact Us" />
+      {onSanctuary && <Hotspot def={NAV_1024.sanct} onClick={onSanctuary} label="Sanctuary Kit" />}
       <Hotspot def={B_LOGOUT}        onClick={onLogout}  label="Logout" />
       <Hotspot def={B_SEND}          onClick={openMail}  label="Send Message" />
     </ImagePage>

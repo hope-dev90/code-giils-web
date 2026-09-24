@@ -13,21 +13,24 @@ const F_PASS:  HotspotDef = h(200, 563, 440, 55);
 const B_LOGIN: HotspotDef = h(280, 648, 345, 44);
 
 // Nav tiles (same grid)
-const T_ABOUT   = h(310, 155, 155, 105);
-const T_NATURAL = h(468, 155, 160, 105);
-const T_WATER   = h(630, 155, 160, 105);
-const T_STATS   = h(793, 155, 160, 105);
-const T_CONTACT = h(956, 155, 160, 105);
-const B_LOGOUT  = h(820, 760, 190,  55);
+const T_ABOUT     = h(310, 155, 155, 105);
+const T_NATURAL   = h(468, 155, 160, 105);
+const T_WATER     = h(630, 155, 160, 105);
+const T_STATS     = h(793, 155, 160, 105);
+const T_CONTACT   = h(956, 155, 160, 105);
+const T_SANCTUARY = h(1118, 155, 160, 105);  // Add sanctuary nav
+const T_SHOWCASE  = h(1280, 155, 160, 105);  // Add showcase nav
+const B_LOGOUT    = h(820, 760, 190,  55);
 
 interface Props {
   onSuccess: () => void;
   onClose: () => void;
   onAbout: () => void; onNatural: () => void; onWater: () => void;
-  onStats: () => void; onContact: () => void; onLogout: () => void;
+  onStats: () => void; onContact: () => void; onSanctuary: () => void; 
+  onShowcase: () => void; onLogout: () => void;
 }
 
-export function LoginModal({ onSuccess, onClose, onAbout, onNatural, onWater, onStats, onContact, onLogout }: Props) {
+export function LoginModal({ onSuccess, onClose, onAbout, onNatural, onWater, onStats, onContact, onSanctuary, onShowcase, onLogout }: Props) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -58,12 +61,14 @@ export function LoginModal({ onSuccess, onClose, onAbout, onNatural, onWater, on
         {/* Login button */}
         <Hotspot def={B_LOGIN} onClick={doLogin} label="Log In" />
         {/* Nav */}
-        <Hotspot def={T_ABOUT}   onClick={navClose(onAbout)}   label="About" />
-        <Hotspot def={T_NATURAL} onClick={navClose(onNatural)} label="Natural" />
-        <Hotspot def={T_WATER}   onClick={navClose(onWater)}   label="Water" />
-        <Hotspot def={T_STATS}   onClick={navClose(onStats)}   label="Stats" />
-        <Hotspot def={T_CONTACT} onClick={navClose(onContact)} label="Contact" />
-        <Hotspot def={B_LOGOUT}  onClick={navClose(onLogout)}  label="Logout" />
+        <Hotspot def={T_ABOUT}     onClick={navClose(onAbout)}     label="About" />
+        <Hotspot def={T_NATURAL}   onClick={navClose(onNatural)}   label="Natural" />
+        <Hotspot def={T_WATER}     onClick={navClose(onWater)}     label="Water" />
+        <Hotspot def={T_STATS}     onClick={navClose(onStats)}     label="Stats" />
+        <Hotspot def={T_CONTACT}   onClick={navClose(onContact)}   label="Contact" />
+        <Hotspot def={T_SANCTUARY} onClick={navClose(onSanctuary)} label="Sanctuary" />
+        <Hotspot def={T_SHOWCASE}  onClick={navClose(onShowcase)}  label="Showcase" />
+        <Hotspot def={B_LOGOUT}    onClick={navClose(onLogout)}    label="Logout" />
 
         {/* Error message */}
         {error && (
@@ -86,28 +91,46 @@ export function LoginModal({ onSuccess, onClose, onAbout, onNatural, onWater, on
     </div>
   );
 }
-
 function InputOverlay({ def, value, onChange, placeholder, type, onEnter }: {
   def: HotspotDef; value: string; onChange: (v: string) => void;
   placeholder: string; type: string; onEnter: () => void;
 }) {
   const [x, y, w, h] = def;
   return (
-    <input
-      type={type}
-      value={value}
-      onChange={e => onChange(e.target.value)}
-      onKeyDown={e => e.key === "Enter" && onEnter()}
-      placeholder={placeholder}
-      style={{
-        position: "absolute",
-        left: `${x * 100}%`, top: `${y * 100}%`,
-        width: `${w * 100}%`, height: `${h * 100}%`,
-        background: "transparent", border: "none", outline: "none",
-        fontFamily: "sans-serif", fontWeight: 700, fontSize: "clamp(12px,1.4vw,20px)",
-        color: "#2A1A04", paddingLeft: "3.5%", paddingRight: "1%",
-        caretColor: "#2A1A04", zIndex: 10,
-      }}
-    />
+    <>
+      <style>{`
+        .overlay-input,
+        .overlay-input:hover,
+        .overlay-input:focus,
+        .overlay-input:-webkit-autofill,
+        .overlay-input:-webkit-autofill:hover,
+        .overlay-input:-webkit-autofill:focus,
+        .overlay-input:-webkit-autofill:active {
+          background: transparent !important;
+          background-color: transparent !important;
+          -webkit-text-fill-color: #2A1A04 !important;
+          caret-color: #2A1A04;
+          transition: background-color 999999s ease-in-out 0s;
+        }
+      `}</style>
+      <input
+        className="overlay-input"
+        type={type}
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        onKeyDown={e => e.key === "Enter" && onEnter()}
+        placeholder={placeholder}
+        autoComplete={type === "password" ? "new-password" : "off"}
+        style={{
+          position: "absolute",
+          left: `${x * 100}%`, top: `${y * 100}%`,
+          width: `${w * 100}%`, height: `${h * 100}%`,
+          background: "transparent", border: "none", outline: "none",
+          fontFamily: "sans-serif", fontWeight: 700, fontSize: "clamp(12px,1.4vw,20px)",
+          color: "#2A1A04", paddingLeft: "3.5%", paddingRight: "1%",
+          caretColor: "#2A1A04", zIndex: 10,
+        }}
+      />
+    </>
   );
 }

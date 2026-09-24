@@ -32,7 +32,7 @@ const B_FORGOT  = h(930,  775, 350,  55);
 interface Props {
   onHome: () => void; onAbout: () => void; onNatural: () => void;
   onWater: () => void; onStats: () => void; onContact: () => void;
-  onArticles: () => void; onLogout: () => void;
+  onSanctuary: () => void; onShowcase: () => void; onArticles: () => void; onLogout: () => void;
 }
 
 function InputOverlay({ def, value, onChange, placeholder, type }: {
@@ -60,7 +60,7 @@ function InputOverlay({ def, value, onChange, placeholder, type }: {
   );
 }
 
-export default function HomePage({ onAbout, onNatural, onWater, onStats, onContact }: Props) {
+export default function HomePage({ onAbout, onNatural, onWater, onStats, onContact, onSanctuary, onShowcase }: Props) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirm,  setConfirm]  = useState("");
@@ -134,7 +134,8 @@ export default function HomePage({ onAbout, onNatural, onWater, onStats, onConta
           onClose={() => setShowLogin(false)}
           onSuccess={() => { setShowLogin(false); setShowLoginSuccess(true); }}
           onAbout={onAbout} onNatural={onNatural} onWater={onWater}
-          onStats={onStats} onContact={onContact} onLogout={() => setShowLogin(false)}
+          onStats={onStats} onContact={onContact} onSanctuary={onSanctuary} 
+          onShowcase={onShowcase} onLogout={() => setShowLogin(false)}
         />
       )}
 

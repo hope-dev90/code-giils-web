@@ -5,7 +5,7 @@ import { NavHotspots698, NAV_698 } from "@/components/NavHotspots";
 interface Props {
   onHome: () => void; onAbout: () => void; onNatural: () => void;
   onWater: () => void; onStats: () => void; onContact: () => void;
-  onArticles: () => void; onLogout: () => void;
+  onArticles: () => void; onLogout: () => void; onSanctuary?: () => void; onShowcase?: () => void;
 }
 
 export default function AboutPage(props: Props) {

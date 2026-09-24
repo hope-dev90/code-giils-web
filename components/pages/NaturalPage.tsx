@@ -34,7 +34,7 @@ const SLIDE_DEF: HotspotDef = [(768 - 240) / IW, (512 - 180) / IH, 480 / IW, 360
 interface Props {
   onHome: () => void; onAbout: () => void; onNatural: () => void;
   onWater: () => void; onStats: () => void; onContact: () => void;
-  onArticles: () => void; onLogout: () => void;
+  onArticles: () => void; onLogout: () => void; onSanctuary?: () => void;
 }
 
 function Slideshow() {
@@ -190,7 +190,7 @@ function Slideshow() {
   );
 }
 
-export default function NaturalPage({ onHome, onAbout, onNatural, onWater, onStats, onContact, onArticles, onLogout }: Props) {
+export default function NaturalPage({ onHome, onAbout, onNatural, onWater, onStats, onContact, onArticles, onLogout, onSanctuary }: Props) {
   const [popup, setPopup] = useState<string | null>(null);
 
   return (
@@ -201,6 +201,7 @@ export default function NaturalPage({ onHome, onAbout, onNatural, onWater, onSta
       <Hotspot def={NAV_1024.water}   onClick={onWater}   label="Water Products" />
       <Hotspot def={NAV_1024.stats}   onClick={onStats}   label="Product Stats" />
       <Hotspot def={NAV_1024.contact} onClick={onContact} label="Contact Us" />
+      {onSanctuary && <Hotspot def={NAV_1024.sanct} onClick={onSanctuary} label="Sanctuary Kit" />}
       <Hotspot def={h(560, 970, 220, 50)} onClick={onArticles} label="Articles" />
       <Hotspot def={h(820, 970, 190, 50)} onClick={onLogout}   label="Logout" />
 
