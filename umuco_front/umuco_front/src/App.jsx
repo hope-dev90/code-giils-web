@@ -12,12 +12,7 @@ import Dashboard from "./components/dashboard/Dashboard";
 import AdminDashboard from "./components/admin/AdminDashboard";
 import QRScanner from "./components/landing/QRScanner";
 import Discover from "./components/landing/Discover";
-import { gihangaStory } from './data/stories/gihanga';
-import { nyirarucyabaStory } from './data/stories/nyirarucyaba';
-import { ruganzuStory } from './data/stories/ruganzu';
-import { kigeliStory } from './data/stories/kigeli';
-
-const STORIES = [gihangaStory, nyirarucyabaStory, ruganzuStory, kigeliStory];
+import { STORY_LIBRARY as STORIES } from './data/stories';
 
 function AppContent() {
   const { user, loading } = useAuth();

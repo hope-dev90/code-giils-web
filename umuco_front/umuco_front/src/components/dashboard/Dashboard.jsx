@@ -5,8 +5,12 @@ import {
   Smartphone, Waves, X,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
+import { useLanguage } from '../../contexts/Language';
 import TribalLogo from '../../assets/Logo';
 import { apiJson } from '../../config/api';
+import { STORY_LIBRARY, getRewardStory } from '../../data/stories';
+import { localizeStory } from '../../utils/storyLocalization';
+import StoryArticle from '../landing/StoryArticle';
 import braceletImage from '../../assets/bracelet.png';
 import penImage from '../../assets/pen.png';
 import shirtImage from '../../assets/t-shirt.png';
@@ -126,22 +130,6 @@ const ORDERS_KEY = 'umuco_orders_v2';
 
 // Set to false once requestMobileMoneyPayment() talks to your real payment backend.
 const PAYMENT_TEST_MODE = true;
-
-// Story rewards unlocked after payment, one per kit. Replace with your own stories.
-const stories = {
-  bracelet: {
-    title: 'The thread that holds',
-    body: 'In many Rwandan homes the agaseke is more than a basket. Sisal and sweetgrass are woven into tight, coiled patterns, and the finished basket is often given to mark a welcome, a wedding, or a peace made between neighbours. Your bracelet carries the same idea: something small, made with care, meant to be given and remembered. When someone asks about it, tell them who taught you this story.',
-  },
-  'story-pen': {
-    title: 'Listening before writing',
-    body: 'Long before stories were written down, they were told in the evening by elders who knew how to make a pause part of the tale. Rwanda has a rich spoken tradition of proverbs, poems, and tales passed from voice to voice. This week, ask someone older than you for a story from their childhood. Do not interrupt. Write down their first sentence exactly as they say it. That is where your collection begins.',
-  },
-  polo: {
-    title: 'Umuganura, the first fruits',
-    body: 'Umuganura is the Rwandan celebration of the harvest, when families and communities gather to give thanks and share the first fruits of the season. It is a reminder that what we grow, we grow together. Wear this polo with that spirit: pride in where you come from, and the habit of sharing what you have with the people around you.',
-  },
-};
 
 /* ------------------------------------------------------------------ */
 /* Helpers                                                             */
@@ -435,6 +423,7 @@ function CartDrawer({ items, total, onChange, onCheckout, onClose }) {
 }
 
 function PaymentDialog({ items, onPay, onClose, onViewOrders }) {
+  const { language } = useLanguage();
   const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const [phone, setPhone] = useState('');
   const [status, setStatus] = useState('idle'); // idle | waiting | success
@@ -469,21 +458,15 @@ function PaymentDialog({ items, onPay, onClose, onViewOrders }) {
   };
 
   if (status === 'success' && result) {
-    const unlocked = result.order.storyIds.map((id) => stories[id]).filter(Boolean);
+    const unlocked = result.order.storyIds.map(getRewardStory).filter(Boolean);
     return (
-      <Modal label="Payment received" onClose={handleClose} width="max-w-lg">
+      <Modal label="Payment received" onClose={handleClose} width="max-w-3xl">
         <div className="p-6 sm:p-8">
           <span className="mb-4 grid h-12 w-12 place-items-center rounded-full bg-[#EFF7EF] text-[#315D3A]"><Check size={24} /></span>
           <h2 className="mb-1 pr-10 text-2xl font-bold">Thank you. Payment received.</h2>
-          <p className="mb-5 text-sm text-[#6F5B55]">Order {result.order.id} · {formatRwf(result.order.total)} paid with {result.order.payment.method}. You have unlocked {unlocked.length === 1 ? 'a story' : `${unlocked.length} stories`}.</p>
-          <div className="mb-5 space-y-3">
-            {unlocked.map((story) => (
-              <article key={story.title} className="rounded-2xl bg-[#F5EEE5] p-5">
-                <p className="mb-2 flex items-center gap-2 text-xs font-bold text-[#8D493A]"><BookOpen size={15} /> Your story</p>
-                <h3 className="mb-2 text-lg font-bold">{story.title}</h3>
-                <p className="m-0 text-sm leading-7 text-[#6F5B55]">{story.body}</p>
-              </article>
-            ))}
+          <p className="mb-5 text-sm text-[#6F5B55]">Order {result.order.id} · {formatRwf(result.order.total)} paid with {result.order.payment.method}. Your order unlocked a story from the Umuco archive.</p>
+          <div className="mb-5 space-y-4">
+            {unlocked.map((story) => <StoryArticle key={story.id} story={story} language={language} rewardLabel="A story unlocked with your purchase" compact />)}
           </div>
           {!result.saved && <p className="mb-4 rounded-xl bg-[#FFF6EA] p-3 text-xs text-[#7A4A1C]">This order could not be saved on this device, so it may not appear in My orders. Keep the order number above.</p>}
           <div className="flex flex-wrap gap-3">
@@ -556,6 +539,7 @@ function PaymentDialog({ items, onPay, onClose, onViewOrders }) {
 }
 
 function OrdersView({ orders, onShop, onClear }) {
+  const { language } = useLanguage();
   return (
     <section aria-labelledby="orders-title">
       <div className="mb-7 flex flex-wrap items-end justify-between gap-4">
@@ -572,7 +556,7 @@ function OrdersView({ orders, onShop, onClear }) {
       {orders.length ? (
         <div className="space-y-4">
           {orders.map((order) => {
-            const unlocked = (order.storyIds || []).map((id) => stories[id]).filter(Boolean);
+            const unlocked = (order.storyIds || []).map(getRewardStory).filter(Boolean);
             return (
               <article key={order.id} className="rounded-2xl border border-[#EADBC8] bg-white p-5 sm:p-6">
                 <div className="flex flex-wrap items-start justify-between gap-4">
@@ -586,9 +570,9 @@ function OrdersView({ orders, onShop, onClear }) {
                 {unlocked.length > 0 && (
                   <div className="mt-4 space-y-2 border-t border-[#F0E7DE] pt-4">
                     {unlocked.map((story) => (
-                      <details key={story.title} className="group rounded-xl bg-[#F5EEE5] p-4">
-                        <summary className="flex cursor-pointer list-none items-center gap-2 text-sm font-bold text-[#8D493A]"><BookOpen size={16} /> Story unlocked: {story.title}</summary>
-                        <p className="mb-0 mt-3 text-sm leading-7 text-[#6F5B55]">{story.body}</p>
+                      <details key={story.id} className="group overflow-hidden rounded-xl border border-[#EADBC8] bg-white">
+                        <summary className="cursor-pointer list-none px-4 py-3 text-sm font-bold text-[#8D493A]"><BookOpen className="mr-2 inline" size={16} />Story unlocked: {localizeStory(story, language).title}</summary>
+                        <div className="border-t border-[#EADBC8] p-3 sm:p-5"><StoryArticle story={story} language={language} rewardLabel="Unlocked with this order" compact /></div>
                       </details>
                     ))}
                   </div>
@@ -739,7 +723,7 @@ export default function Dashboard({ onNavigate, onLogout }) {
       items: checkout.items,
       total: checkout.items.reduce((total, item) => total + item.price * item.quantity, 0),
       payment,
-      storyIds: [...new Set(checkout.items.map((item) => item.id))].filter((id) => stories[id]),
+      storyIds: [STORY_LIBRARY[Math.floor(Math.random() * STORY_LIBRARY.length)].id],
     };
     const nextOrders = [order, ...orders];
     const saved = writeOrders(nextOrders);
