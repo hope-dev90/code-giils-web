@@ -35,8 +35,8 @@ async function sendOtp(email, code, purpose) {
       text: `${title}. Your six-digit code is ${code}. It expires in 10 minutes.`,
     });
   } catch (error) {
-    console.error('Gmail SMTP delivery failed:', error.code || error.message);
-    throw Object.assign(new Error('Could not send the email. Check the Gmail address and App Password settings.'), { status: 502 });
+    console.error('SMTP email delivery failed:', error.code || error.message);
+    throw Object.assign(new Error('Could not send the email. Check the SMTP host, port, username, password, and verified sender address.'), { status: 502 });
   } finally {
     transporter.close();
   }
