@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  ArrowLeft, ArrowRight, BriefcaseBusiness, Check, ClipboardList, FileText,
+  ArrowLeft, ArrowRight, BookOpen, BriefcaseBusiness, Check, ClipboardList, FileText,
   Leaf, LogOut, Minus, Package, Plus, ShoppingBag, Sparkles, Sprout, Trees,
-  Waves, X,
+  Smartphone, Waves, X,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import TribalLogo from '../../assets/Logo';
@@ -72,6 +72,25 @@ const defaultBusinessForm = {
 
 const ORDERS_KEY = 'umuco_orders_v2';
 
+// Set to false once requestMobileMoneyPayment() talks to your real payment backend.
+const PAYMENT_TEST_MODE = true;
+
+// Story rewards unlocked after payment, one per kit. Replace with your own stories.
+const stories = {
+  bracelet: {
+    title: 'The thread that holds',
+    body: 'In many Rwandan homes the agaseke is more than a basket. Sisal and sweetgrass are woven into tight, coiled patterns, and the finished basket is often given to mark a welcome, a wedding, or a peace made between neighbours. Your bracelet carries the same idea: something small, made with care, meant to be given and remembered. When someone asks about it, tell them who taught you this story.',
+  },
+  'story-pen': {
+    title: 'Listening before writing',
+    body: 'Long before stories were written down, they were told in the evening by elders who knew how to make a pause part of the tale. Rwanda has a rich spoken tradition of proverbs, poems, and tales passed from voice to voice. This week, ask someone older than you for a story from their childhood. Do not interrupt. Write down their first sentence exactly as they say it. That is where your collection begins.',
+  },
+  polo: {
+    title: 'Umuganura, the first fruits',
+    body: 'Umuganura is the Rwandan celebration of the harvest, when families and communities gather to give thanks and share the first fruits of the season. It is a reminder that what we grow, we grow together. Wear this polo with that spirit: pride in where you come from, and the habit of sharing what you have with the people around you.',
+  },
+};
+
 /* ------------------------------------------------------------------ */
 /* Helpers                                                             */
 /* ------------------------------------------------------------------ */
@@ -108,6 +127,35 @@ function formatDate(iso) {
   return Number.isNaN(date.getTime())
     ? ''
     : date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+/** Accepts 078 123 4567, 0781234567, +250781234567, 250781234567 and returns 0781234567. */
+function normalizeRwandaPhone(input) {
+  let digits = String(input || '').replace(/\D/g, '');
+  if (digits.startsWith('250')) digits = `0${digits.slice(3)}`;
+  return digits;
+}
+
+function detectProvider(local) {
+  if (/^07[89]\d{7}$/.test(local)) return 'MTN MoMo';
+  if (/^07[23]\d{7}$/.test(local)) return 'Airtel Money';
+  return null;
+}
+
+function maskPhone(local) {
+  return `${local.slice(0, 3)}•••••${local.slice(-2)}`;
+}
+
+/**
+ * TODO: replace this stub with a call to YOUR backend, which asks MTN MoMo / Airtel Money
+ * (directly or through a provider such as Flutterwave or Paypack) to send a payment prompt
+ * to the customer's phone and confirms the result. Never put payment secrets in the frontend.
+ * Must resolve to { ok: true } on success or { ok: false, message } on failure.
+ */
+async function requestMobileMoneyPayment({ phone, provider, amount }) {
+  void phone; void provider; void amount;
+  await new Promise((resolve) => { setTimeout(resolve, 2500); });
+  return { ok: true };
 }
 
 /* ------------------------------------------------------------------ */
@@ -153,7 +201,7 @@ function QuantityStepper({ value, onChange, label, min = 0 }) {
 }
 
 /** Accessible modal / side drawer: Escape closes, focus is trapped and restored, page scroll is locked. */
-function Modal({ label, onClose, side = false, children }) {
+function Modal({ label, onClose, side = false, width = 'max-w-3xl', children }) {
   const panelRef = useRef(null);
   const closeRef = useRef(onClose);
   closeRef.current = onClose;
@@ -209,7 +257,7 @@ function Modal({ label, onClose, side = false, children }) {
         aria-label={label}
         className={side
           ? 'relative flex h-full w-full max-w-md flex-col bg-[#FDFBF7] shadow-2xl'
-          : 'relative w-full max-w-3xl overflow-hidden rounded-3xl bg-[#FDFBF7] shadow-2xl'}
+          : `relative max-h-[92vh] w-full ${width} overflow-y-auto rounded-3xl bg-[#FDFBF7] shadow-2xl`}
       >
         <button
           type="button"
@@ -313,7 +361,7 @@ function CartDrawer({ items, total, onChange, onCheckout, onClose }) {
             <strong className="text-xl text-[#874638]">{formatRwf(total)}</strong>
           </div>
           <button type="button" onClick={onCheckout} className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#8D493A] px-5 py-3 text-sm font-bold text-white hover:bg-[#71392E]">
-            Review order <ArrowRight size={16} />
+            Continue to payment <ArrowRight size={16} />
           </button>
         </div>
       )}
@@ -321,14 +369,74 @@ function CartDrawer({ items, total, onChange, onCheckout, onClose }) {
   );
 }
 
-function CheckoutDialog({ items, onConfirm, onClose }) {
+function PaymentDialog({ items, onPay, onClose, onViewOrders }) {
   const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const [phone, setPhone] = useState('');
+  const [status, setStatus] = useState('idle'); // idle | waiting | success
+  const [error, setError] = useState('');
+  const [result, setResult] = useState(null);
+
+  const local = normalizeRwandaPhone(phone);
+  const provider = detectProvider(local);
+  const waiting = status === 'waiting';
+
+  const handleClose = () => {
+    if (!waiting) onClose();
+  };
+
+  const submit = async (event) => {
+    event.preventDefault();
+    if (!provider) {
+      setError('Enter a valid MTN or Airtel number, for example 078 123 4567.');
+      return;
+    }
+    setError('');
+    setStatus('waiting');
+    try {
+      const payment = await requestMobileMoneyPayment({ phone: local, provider, amount: total });
+      if (!payment?.ok) throw new Error(payment?.message || 'The payment was not approved.');
+      setResult(onPay({ method: provider, phone: maskPhone(local) }));
+      setStatus('success');
+    } catch (err) {
+      setError(`${err.message || 'The payment could not be completed.'} Please try again.`);
+      setStatus('idle');
+    }
+  };
+
+  if (status === 'success' && result) {
+    const unlocked = result.order.storyIds.map((id) => stories[id]).filter(Boolean);
+    return (
+      <Modal label="Payment received" onClose={handleClose} width="max-w-lg">
+        <div className="p-6 sm:p-8">
+          <span className="mb-4 grid h-12 w-12 place-items-center rounded-full bg-[#EFF7EF] text-[#315D3A]"><Check size={24} /></span>
+          <h2 className="mb-1 pr-10 text-2xl font-bold">Thank you. Payment received.</h2>
+          <p className="mb-5 text-sm text-[#6F5B55]">Order {result.order.id} · {formatRwf(result.order.total)} paid with {result.order.payment.method}. You have unlocked {unlocked.length === 1 ? 'a story' : `${unlocked.length} stories`}.</p>
+          <div className="mb-5 space-y-3">
+            {unlocked.map((story) => (
+              <article key={story.title} className="rounded-2xl bg-[#F5EEE5] p-5">
+                <p className="mb-2 flex items-center gap-2 text-xs font-bold text-[#8D493A]"><BookOpen size={15} /> Your story</p>
+                <h3 className="mb-2 text-lg font-bold">{story.title}</h3>
+                <p className="m-0 text-sm leading-7 text-[#6F5B55]">{story.body}</p>
+              </article>
+            ))}
+          </div>
+          {!result.saved && <p className="mb-4 rounded-xl bg-[#FFF6EA] p-3 text-xs text-[#7A4A1C]">This order could not be saved on this device, so it may not appear in My orders. Keep the order number above.</p>}
+          <div className="flex flex-wrap gap-3">
+            <button type="button" onClick={onViewOrders} className="rounded-xl bg-[#8D493A] px-5 py-3 text-sm font-bold text-white hover:bg-[#71392E]">View my orders</button>
+            <button type="button" onClick={onClose} className="rounded-xl border border-[#DCC9B9] bg-white px-5 py-3 text-sm font-bold text-[#874638] hover:bg-[#F8F5F0]">Keep shopping</button>
+          </div>
+        </div>
+      </Modal>
+    );
+  }
+
   return (
-    <Modal label="Confirm your order" onClose={onClose}>
-      <div className="p-6 sm:p-8">
-        <h2 className="mb-1 pr-10 text-2xl font-bold">Confirm your order</h2>
-        <p className="mb-5 text-sm text-[#6F5B55]">Check your items before placing the order.</p>
-        <ul className="m-0 mb-5 list-none space-y-2 p-0">
+    <Modal label="Pay with mobile money" onClose={handleClose} width="max-w-lg">
+      <form onSubmit={submit} className="p-6 sm:p-8" noValidate>
+        <h2 className="mb-1 pr-10 text-2xl font-bold">Pay with mobile money</h2>
+        <p className="mb-5 text-sm text-[#6F5B55]">Pay with MTN MoMo or Airtel Money, and unlock a story with your order.</p>
+
+        <ul className="m-0 mb-4 list-none space-y-2 p-0">
           {items.map((item) => (
             <li key={item.id} className="flex items-center justify-between gap-4 rounded-xl bg-[#F8F5F0] px-4 py-3 text-sm">
               <span className="font-semibold">{item.name} × {item.quantity}</span>
@@ -336,21 +444,103 @@ function CheckoutDialog({ items, onConfirm, onClose }) {
             </li>
           ))}
         </ul>
-        <div className="mb-4 flex items-center justify-between">
-          <span className="text-sm font-semibold text-[#6F5B55]">Total</span>
+        <div className="mb-5 flex items-center justify-between">
+          <span className="text-sm font-semibold text-[#6F5B55]">Total to pay</span>
           <strong className="text-xl text-[#874638]">{formatRwf(total)}</strong>
         </div>
-        <p className="mb-5 text-xs leading-5 text-[#6F5B55]">Online payment and delivery are not available yet. Your order is saved on this device so you can find it under My orders.</p>
-        <div className="flex flex-wrap gap-3">
-          <button type="button" onClick={onConfirm} className="inline-flex items-center gap-2 rounded-xl bg-[#8D493A] px-5 py-3 text-sm font-bold text-white hover:bg-[#71392E]">
-            <Check size={16} /> Place order
+
+        <label htmlFor="momo-phone" className="text-xs font-bold text-[#6F5B55]">Mobile money number</label>
+        <div className="relative mt-2">
+          <Smartphone size={17} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#8D493A]" />
+          <input
+            id="momo-phone"
+            type="tel"
+            inputMode="tel"
+            autoComplete="tel"
+            value={phone}
+            onChange={(event) => { setPhone(event.target.value); setError(''); }}
+            disabled={waiting}
+            placeholder="078 123 4567"
+            aria-invalid={Boolean(error)}
+            aria-describedby="momo-help"
+            className="w-full rounded-xl border border-[#EADBC8] bg-white py-3 pl-10 pr-3 text-base font-medium text-[#30221E] disabled:opacity-60"
+          />
+        </div>
+        <p id="momo-help" className={`mb-0 mt-2 min-h-[1.25rem] text-xs ${error ? 'text-[#A32D2D]' : 'text-[#6F5B55]'}`} role={error ? 'alert' : undefined}>
+          {error || (provider ? `${provider} number detected.` : 'MTN numbers start with 078 or 079. Airtel numbers start with 072 or 073.')}
+        </p>
+
+        {waiting && (
+          <div role="status" className="mt-4 flex items-center gap-3 rounded-xl bg-[#F5EEE5] p-4 text-sm">
+            <span className="h-5 w-5 shrink-0 animate-spin rounded-full border-2 border-[#EADBC8] border-t-[#8D493A]" />
+            <span>Check your phone ({maskPhone(local)}) and approve the payment of {formatRwf(total)}.</span>
+          </div>
+        )}
+
+        {PAYMENT_TEST_MODE && <p className="mb-0 mt-4 rounded-xl bg-[#FFF6EA] p-3 text-xs leading-5 text-[#7A4A1C]">Test mode: no money is taken and no message is sent to your phone.</p>}
+
+        <div className="mt-5 flex flex-wrap gap-3">
+          <button type="submit" disabled={waiting} className="inline-flex items-center gap-2 rounded-xl bg-[#8D493A] px-5 py-3 text-sm font-bold text-white hover:bg-[#71392E] disabled:cursor-not-allowed disabled:opacity-60">
+            {waiting ? 'Waiting for approval…' : `Pay ${formatRwf(total)}`}
           </button>
-          <button type="button" onClick={onClose} className="rounded-xl border border-[#DCC9B9] bg-white px-5 py-3 text-sm font-bold text-[#874638] hover:bg-[#F8F5F0]">
-            Cancel
-          </button>
+          <button type="button" onClick={handleClose} disabled={waiting} className="rounded-xl border border-[#DCC9B9] bg-white px-5 py-3 text-sm font-bold text-[#874638] hover:bg-[#F8F5F0] disabled:opacity-50">Cancel</button>
+        </div>
+      </form>
+    </Modal>
+  );
+}
+
+function OrdersView({ orders, onShop, onClear }) {
+  return (
+    <section aria-labelledby="orders-title">
+      <div className="mb-7 flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p className="mb-2 text-xs font-bold tracking-wide text-[#8D493A]">Your purchases</p>
+          <h1 id="orders-title" className="mb-2 text-3xl font-bold tracking-tight">My orders</h1>
+          <p className="m-0 max-w-2xl text-sm leading-6 text-[#6F5B55]">Every order you place, with the stories you unlocked. Orders are saved on this device.</p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {orders.length > 0 && <button type="button" onClick={onClear} className="rounded-full border border-[#DCC9B9] bg-white px-4 py-2.5 text-sm font-bold text-[#874638] hover:bg-[#F8F5F0]">Clear order history</button>}
+          <button type="button" onClick={onShop} className="inline-flex items-center gap-2 rounded-full border border-[#DCC9B9] bg-white px-4 py-2.5 text-sm font-bold text-[#874638] hover:bg-[#F8F5F0]"><ArrowLeft size={15} /> Back to shop</button>
         </div>
       </div>
-    </Modal>
+      {orders.length ? (
+        <div className="space-y-4">
+          {orders.map((order) => {
+            const unlocked = (order.storyIds || []).map((id) => stories[id]).filter(Boolean);
+            return (
+              <article key={order.id} className="rounded-2xl border border-[#EADBC8] bg-white p-5 sm:p-6">
+                <div className="flex flex-wrap items-start justify-between gap-4">
+                  <div>
+                    <p className="mb-1 text-xs font-bold text-[#874638]">{order.id} · {formatDate(order.createdAt)}</p>
+                    <p className="mb-1 text-sm font-semibold">{order.items.map((item) => `${item.name} × ${item.quantity}`).join(', ')}</p>
+                    {order.payment && <p className="m-0 text-xs text-[#6F5B55]">Paid with {order.payment.method} · {order.payment.phone}</p>}
+                  </div>
+                  <strong className="text-lg text-[#874638]">{formatRwf(order.total)}</strong>
+                </div>
+                {unlocked.length > 0 && (
+                  <div className="mt-4 space-y-2 border-t border-[#F0E7DE] pt-4">
+                    {unlocked.map((story) => (
+                      <details key={story.title} className="group rounded-xl bg-[#F5EEE5] p-4">
+                        <summary className="flex cursor-pointer list-none items-center gap-2 text-sm font-bold text-[#8D493A]"><BookOpen size={16} /> Story unlocked: {story.title}</summary>
+                        <p className="mb-0 mt-3 text-sm leading-7 text-[#6F5B55]">{story.body}</p>
+                      </details>
+                    ))}
+                  </div>
+                )}
+              </article>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="rounded-2xl border border-dashed border-[#DCC9B9] bg-white/60 p-8 text-center">
+          <ShoppingBag className="mx-auto mb-3 text-[#8D493A]" size={23} />
+          <p className="mb-1 text-sm font-bold">Your story starts here</p>
+          <p className="mb-4 text-xs text-[#6F5B55]">You haven’t placed an order yet. Every order unlocks a story.</p>
+          <button type="button" onClick={onShop} className="rounded-xl bg-[#8D493A] px-5 py-3 text-sm font-bold text-white hover:bg-[#71392E]">Explore the collection</button>
+        </div>
+      )}
+    </section>
   );
 }
 
@@ -392,6 +582,8 @@ export default function Dashboard({ onNavigate, onLogout }) {
   const [detailProduct, setDetailProduct] = useState(null);
   const [cartOpen, setCartOpen] = useState(false);
   const [checkout, setCheckout] = useState(null); // { items, source: 'cart' | 'buy' }
+  const [view, setView] = useState('shop'); // 'shop' | 'orders'
+  const pendingScroll = useRef(null);
 
   const featuredProduct = products.find((product) => product.featured) || products[0];
 
@@ -411,9 +603,13 @@ export default function Dashboard({ onNavigate, onLogout }) {
     return () => clearTimeout(timer);
   }, [toast]);
 
-  /* Highlight the nav item for the section currently in view */
+  /* Highlight the nav item for the shop section currently in view */
   useEffect(() => {
-    const elements = sections.map(({ id }) => document.getElementById(`dashboard-${id}`)).filter(Boolean);
+    if (view !== 'shop') return undefined;
+    const elements = sections
+      .filter(({ id }) => id !== 'orders')
+      .map(({ id }) => document.getElementById(`dashboard-${id}`))
+      .filter(Boolean);
     if (!elements.length || typeof IntersectionObserver === 'undefined') return undefined;
     const observer = new IntersectionObserver(
       (entries) => {
@@ -424,10 +620,30 @@ export default function Dashboard({ onNavigate, onLogout }) {
     );
     elements.forEach((element) => observer.observe(element));
     return () => observer.disconnect();
-  }, []);
+  }, [view]);
+
+  /* After switching back from My orders, scroll to the requested shop section */
+  useEffect(() => {
+    if (view !== 'shop' || !pendingScroll.current) return;
+    const id = pendingScroll.current;
+    pendingScroll.current = null;
+    requestAnimationFrame(() => {
+      document.getElementById(`dashboard-${id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }, [view]);
 
   const goTo = (id) => {
     setActiveSection(id);
+    if (id === 'orders') {
+      setView('orders');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+    if (view !== 'shop') {
+      pendingScroll.current = id;
+      setView('shop');
+      return;
+    }
     document.getElementById(`dashboard-${id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
@@ -448,29 +664,26 @@ export default function Dashboard({ onNavigate, onLogout }) {
     });
   };
 
-  const confirmOrder = () => {
-    if (!checkout) return;
+  /** Called by PaymentDialog after the mobile money payment succeeds. */
+  const confirmOrder = (payment) => {
     const order = {
       id: newOrderId(),
       createdAt: new Date().toISOString(),
       items: checkout.items,
       total: checkout.items.reduce((total, item) => total + item.price * item.quantity, 0),
+      payment,
+      storyIds: [...new Set(checkout.items.map((item) => item.id))].filter((id) => stories[id]),
     };
     const nextOrders = [order, ...orders];
     const saved = writeOrders(nextOrders);
     setOrders(nextOrders);
     if (checkout.source === 'cart') setCart({});
-    setCheckout(null);
-    setToast(saved
-      ? `Order ${order.id} placed and saved on this device.`
-      : `Order ${order.id} placed, but it could not be saved on this device.`);
-    goTo('orders');
+    return { order, saved };
   };
 
   const clearOrderHistory = () => {
     try {
       localStorage.removeItem(ORDERS_KEY);
-      // Remove the earlier demo key too, in case orders were saved by the old dashboard.
       localStorage.removeItem('umuco_demo_orders');
       setOrders([]);
       setToast('Order history cleared. You can start fresh.');
@@ -531,6 +744,7 @@ export default function Dashboard({ onNavigate, onLogout }) {
             >
               <Icon size={18} /><span>{label}</span>
               {id === 'kits' && cartCount > 0 && <span className="ml-auto rounded-full bg-white px-2 py-0.5 text-[11px]">{cartCount}</span>}
+              {id === 'orders' && orders.length > 0 && <span className="ml-auto rounded-full bg-white px-2 py-0.5 text-[11px]">{orders.length}</span>}
             </button>
           ))}
         </nav>
@@ -572,6 +786,12 @@ export default function Dashboard({ onNavigate, onLogout }) {
           </div>
         </header>
 
+        {view === 'orders' && (
+          <div className="mx-auto mt-6 max-w-6xl sm:mt-8">
+            <OrdersView orders={orders} onShop={() => goTo('kits')} onClear={clearOrderHistory} />
+          </div>
+        )}
+        {view === 'shop' && (
         <div className="mx-auto mt-6 max-w-6xl space-y-16 sm:mt-8 sm:space-y-20">
           {/* ---------------- Shop ---------------- */}
           <section id="dashboard-kits" className="scroll-mt-8">
@@ -762,40 +982,8 @@ export default function Dashboard({ onNavigate, onLogout }) {
             )}
           </section>
 
-          {/* ---------------- Orders ---------------- */}
-          <section id="dashboard-orders" className="scroll-mt-8 border-t border-[#E7D9CA] pt-12 sm:pt-16">
-            <SectionHeading
-              eyebrow="Your purchases"
-              title="My orders"
-              description="Orders you place are saved on this device. Online payment and delivery are not available yet."
-              aside={orders.length > 0 && (
-                <button type="button" onClick={clearOrderHistory} className="rounded-xl border border-[#DCC9B9] bg-white px-4 py-2.5 text-xs font-bold text-[#874638] transition hover:bg-[#F8F1EB]">
-                  Clear order history
-                </button>
-              )}
-            />
-            {orders.length ? (
-              <div className="space-y-3">
-                {orders.map((order) => (
-                  <article key={order.id} className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-[#EADBC8] bg-white p-5">
-                    <div>
-                      <p className="mb-1 text-xs font-bold text-[#874638]">{order.id}</p>
-                      <p className="mb-1 text-sm font-semibold">{order.items.map((item) => `${item.name} × ${item.quantity}`).join(', ')}</p>
-                      <p className="m-0 text-xs text-[#6F5B55]">{formatDate(order.createdAt)}</p>
-                    </div>
-                    <strong className="text-[#874638]">{formatRwf(order.total)}</strong>
-                  </article>
-                ))}
-              </div>
-            ) : (
-              <div className="rounded-2xl border border-dashed border-[#DCC9B9] bg-white/60 p-7 text-center">
-                <ShoppingBag className="mx-auto mb-3 text-[#8D493A]" size={23} />
-                <p className="mb-1 text-sm font-bold">Your story starts here</p>
-                <p className="m-0 text-xs text-[#6F5B55]">You haven’t placed an order yet. Explore the collection whenever you’re ready.</p>
-              </div>
-            )}
-          </section>
         </div>
+        )}
       </main>
 
       {/* Bottom nav (mobile) */}
@@ -832,7 +1020,14 @@ export default function Dashboard({ onNavigate, onLogout }) {
           onClose={() => setCartOpen(false)}
         />
       )}
-      {checkout && <CheckoutDialog items={checkout.items} onConfirm={confirmOrder} onClose={() => setCheckout(null)} />}
+      {checkout && (
+        <PaymentDialog
+          items={checkout.items}
+          onPay={confirmOrder}
+          onClose={() => setCheckout(null)}
+          onViewOrders={() => { setCheckout(null); goTo('orders'); }}
+        />
+      )}
       {detailProduct && (
         <ProductDetail
           product={detailProduct}
