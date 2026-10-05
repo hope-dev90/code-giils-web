@@ -138,7 +138,8 @@ router.post('/business-plan', requireAuth, async (req, res) => {
   const timeout = setTimeout(() => controller.abort(), 45_000);
 
   try {
-    const upstream = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
+    const requestUrl = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;
+    const requestOptions = {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -158,7 +159,15 @@ router.post('/business-plan', requireAuth, async (req, res) => {
         },
       }),
       signal: controller.signal,
-    });
+    };
+
+    let upstream;
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      upstream = await fetch(requestUrl, requestOptions);
+      if (upstream.status !== 503 || attempt === 2) break;
+      const backoffMs = (500 * (2 ** attempt)) + Math.floor(Math.random() * 250);
+      await new Promise((resolve) => setTimeout(resolve, backoffMs));
+    }
 
     const payload = await upstream.json().catch(() => ({}));
     if (!upstream.ok) {
