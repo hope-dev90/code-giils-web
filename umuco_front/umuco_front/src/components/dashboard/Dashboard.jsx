@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import TribalLogo from '../../assets/Logo';
+import { apiJson } from '../../config/api';
 import braceletImage from '../../assets/bracelet.png';
 import penImage from '../../assets/pen.png';
 import shirtImage from '../../assets/t-shirt.png';
@@ -578,6 +579,8 @@ export default function Dashboard({ onNavigate, onLogout }) {
   const [businessForm, setBusinessForm] = useState(defaultBusinessForm);
   const [businessPlan, setBusinessPlan] = useState(null);
   const [planStale, setPlanStale] = useState(false);
+  const [planLoading, setPlanLoading] = useState(false);
+  const [planError, setPlanError] = useState('');
   const [toast, setToast] = useState('');
   const [detailProduct, setDetailProduct] = useState(null);
   const [cartOpen, setCartOpen] = useState(false);
@@ -703,18 +706,30 @@ export default function Dashboard({ onNavigate, onLogout }) {
     if (businessPlan) setPlanStale(true);
   };
 
-  const generateBusinessPlan = (event) => {
+  const generateBusinessPlan = async (event) => {
     event.preventDefault();
-    setBusinessPlan({
-      ...businessForm,
-      materials: arrangedMaterials.map((material) => ({
-        name: material.name,
-        quantity: selectedMaterials[material.id],
-        type: material.type,
-      })),
-      generatedAt: new Date().toISOString(),
-    });
-    setPlanStale(false);
+    setPlanLoading(true);
+    setPlanError('');
+    try {
+      const plan = await apiJson('/api/ai/business-plan', {
+        method: 'POST',
+        body: JSON.stringify({
+          ...businessForm,
+          budget: Number(businessForm.budget),
+          materials: arrangedMaterials.map((material) => ({
+            name: material.name,
+            quantity: selectedMaterials[material.id],
+            type: material.type,
+          })),
+        }),
+      });
+      setBusinessPlan(plan);
+      setPlanStale(false);
+    } catch (error) {
+      setPlanError(error.message || 'Could not generate a business plan. Please try again.');
+    } finally {
+      setPlanLoading(false);
+    }
   };
 
   const handleLogout = () => {
@@ -901,7 +916,7 @@ export default function Dashboard({ onNavigate, onLogout }) {
               title="Business idea generator"
               description="Shape a first idea for a small cultural business. Use your materials notes if helpful, or start with your idea alone."
             />
-            {/* Dev note: when AI analysis is added, call it from the backend. Never put API keys in this frontend. */}
+            <p className="mb-5 rounded-xl border border-[#EADBC8] bg-white p-4 text-xs leading-5 text-[#6F5B55]">AI-generated guidance is a starting point. Check costs, local requirements, and market assumptions before making business decisions.</p>
             <form onSubmit={generateBusinessPlan} className="grid gap-4 rounded-2xl border border-[#EADBC8] bg-white p-5 sm:grid-cols-2 sm:p-7">
               <label className="text-xs font-bold text-[#6F5B55]">
                 Business idea
@@ -933,11 +948,13 @@ export default function Dashboard({ onNavigate, onLogout }) {
                 <p className="m-0 text-xs text-[#6F5B55]">
                   {arrangedMaterials.length ? `${arrangedMaterials.length} material types will be included.` : 'Materials are optional. You can generate an idea without them.'}
                 </p>
-                <button type="submit" className="inline-flex items-center gap-2 rounded-xl bg-[#8D493A] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#71392E]">
-                  <FileText size={16} /> Generate starter idea
+                <button type="submit" disabled={planLoading} className="inline-flex items-center gap-2 rounded-xl bg-[#8D493A] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#71392E] disabled:cursor-wait disabled:opacity-60">
+                  <FileText size={16} /> {planLoading ? 'Generating plan…' : 'Generate business plan'}
                 </button>
               </div>
             </form>
+
+            {planError && <p role="alert" className="mt-4 rounded-xl border border-[#E8C9A8] bg-[#FFF6EA] p-4 text-sm text-[#7A4A1C]">{planError}</p>}
 
             {businessPlan && (
               <article className="mt-5 rounded-2xl border border-[#EADBC8] bg-[#F5EEE5] p-5 sm:p-7">
@@ -955,12 +972,14 @@ export default function Dashboard({ onNavigate, onLogout }) {
                 )}
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="rounded-xl bg-white p-4">
-                    <p className="mb-1 text-xs font-bold text-[#874638]">Concept</p>
-                    <p className="m-0 text-sm leading-6 text-[#6F5B55]">Build a {businessPlan.idea.toLowerCase()} in {businessPlan.location}, using local skills to create useful cultural products.</p>
+                    <p className="mb-1 text-xs font-bold text-[#874638]">Executive summary</p>
+                    <p className="m-0 text-sm leading-6 text-[#6F5B55]">{businessPlan.summary}</p>
                   </div>
                   <div className="rounded-xl bg-white p-4">
-                    <p className="mb-1 text-xs font-bold text-[#874638]">Starting budget</p>
-                    <p className="m-0 text-sm leading-6 text-[#6F5B55]">{formatRwf(businessPlan.budget)}. Start with a small pilot, track material and production costs, and adjust before increasing output.</p>
+                    <p className="mb-1 text-xs font-bold text-[#874638]">Customers and value</p>
+                    <p className="mb-2 text-sm leading-6 text-[#6F5B55]">{businessPlan.targetCustomers}</p>
+                    <p className="mb-1 text-xs font-bold text-[#874638]">Why they may choose it</p>
+                    <p className="m-0 text-sm leading-6 text-[#6F5B55]">{businessPlan.valueProposition}</p>
                   </div>
                   {businessPlan.materials.length > 0 && (
                     <div className="rounded-xl bg-white p-4">
@@ -971,11 +990,27 @@ export default function Dashboard({ onNavigate, onLogout }) {
                     </div>
                   )}
                   <div className="rounded-xl bg-white p-4">
-                    <p className="mb-1 text-xs font-bold text-[#874638]">First steps</p>
-                    <p className="m-0 text-sm leading-6 text-[#6F5B55]">Talk with {businessPlan.customer || 'potential customers'}, learn what people value in {businessPlan.location}, then test a small first offer.</p>
-                    {businessPlan.goal && (
-                      <p className="mb-0 mt-3 border-t border-[#F0E7DE] pt-3 text-sm leading-6 text-[#6F5B55]"><strong className="text-[#30221E]">Your goal:</strong> {businessPlan.goal}</p>
-                    )}
+                    <p className="mb-1 text-xs font-bold text-[#874638]">Marketing approach</p>
+                    <p className="m-0 text-sm leading-6 text-[#6F5B55]">{businessPlan.marketingPlan}</p>
+                  </div>
+                  <div className="rounded-xl bg-white p-4">
+                    <p className="mb-1 text-xs font-bold text-[#874638]">Suggested budget allocation</p>
+                    <p className="mb-2 text-xs text-[#6F5B55]">Available starting budget: {formatRwf(businessPlan.budget)}</p>
+                    <ul className="m-0 space-y-2 pl-4 text-sm leading-6 text-[#6F5B55]">
+                      {businessPlan.budgetAllocation.map((item) => <li key={item.category}><strong>{item.category}: {formatRwf(item.amountRwf)}</strong> — {item.rationale}</li>)}
+                    </ul>
+                  </div>
+                  <div className="rounded-xl bg-white p-4">
+                    <p className="mb-1 text-xs font-bold text-[#874638]">Practical first steps</p>
+                    <ol className="m-0 space-y-1 pl-4 text-sm leading-6 text-[#6F5B55]">
+                      {businessPlan.firstSteps.map((step, index) => <li key={`${index}-${step}`}>{step}</li>)}
+                    </ol>
+                  </div>
+                  <div className="rounded-xl bg-white p-4">
+                    <p className="mb-1 text-xs font-bold text-[#874638]">Risks to check</p>
+                    <ul className="m-0 space-y-1 pl-4 text-sm leading-6 text-[#6F5B55]">
+                      {businessPlan.risks.map((risk, index) => <li key={`${index}-${risk}`}>{risk}</li>)}
+                    </ul>
                   </div>
                 </div>
               </article>

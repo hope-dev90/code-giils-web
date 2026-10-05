@@ -5,6 +5,7 @@ import authRoutes from './routes/auth.js';
 import productRoutes from './routes/products.js';
 import orderRoutes from './routes/orders.js';
 import adminRoutes from './routes/admin.js';
+import aiRoutes from './routes/ai.js';
 
 const app = express();
 const configuredOrigins = (process.env.CLIENT_URL || '*').split(',').map((origin) => origin.trim()).filter(Boolean);
@@ -19,6 +20,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/ai', aiRoutes);
 
 app.use((err, _req, res, _next) => {
   console.error(err);
