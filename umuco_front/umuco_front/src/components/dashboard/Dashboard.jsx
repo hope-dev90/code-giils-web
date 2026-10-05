@@ -467,6 +467,18 @@ export default function Dashboard({ onNavigate, onLogout }) {
     goTo('orders');
   };
 
+  const clearOrderHistory = () => {
+    try {
+      localStorage.removeItem(ORDERS_KEY);
+      // Remove the earlier demo key too, in case orders were saved by the old dashboard.
+      localStorage.removeItem('umuco_demo_orders');
+      setOrders([]);
+      setToast('Order history cleared. You can start fresh.');
+    } catch {
+      setToast('Could not clear order history on this device.');
+    }
+  };
+
   const updateMaterialPlan = (id, delta) => {
     setSelectedMaterials((current) => ({ ...current, [id]: Math.max(0, (current[id] || 0) + delta) }));
     if (businessPlan) setPlanStale(true);
@@ -756,6 +768,11 @@ export default function Dashboard({ onNavigate, onLogout }) {
               eyebrow="Your purchases"
               title="My orders"
               description="Orders you place are saved on this device. Online payment and delivery are not available yet."
+              aside={orders.length > 0 && (
+                <button type="button" onClick={clearOrderHistory} className="rounded-xl border border-[#DCC9B9] bg-white px-4 py-2.5 text-xs font-bold text-[#874638] transition hover:bg-[#F8F1EB]">
+                  Clear order history
+                </button>
+              )}
             />
             {orders.length ? (
               <div className="space-y-3">
