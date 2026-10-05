@@ -36,6 +36,47 @@ function cleanText(value, maxLength) {
   return typeof value === 'string' ? value.trim().slice(0, maxLength) : '';
 }
 
+function parseGeneratedJson(text) {
+  const withoutFence = text.trim()
+    .replace(/^```(?:json)?\s*/i, '')
+    .replace(/\s*```$/, '');
+
+  try {
+    return JSON.parse(withoutFence);
+  } catch {
+    // Some model responses add a short preamble or trailing text despite JSON mode.
+    // Extract the first complete JSON object while respecting quoted braces.
+    const start = withoutFence.indexOf('{');
+    if (start < 0) return null;
+
+    let depth = 0;
+    let inString = false;
+    let escaped = false;
+    for (let index = start; index < withoutFence.length; index += 1) {
+      const character = withoutFence[index];
+      if (inString) {
+        if (escaped) escaped = false;
+        else if (character === '\\') escaped = true;
+        else if (character === '"') inString = false;
+        continue;
+      }
+      if (character === '"') inString = true;
+      else if (character === '{') depth += 1;
+      else if (character === '}') {
+        depth -= 1;
+        if (depth === 0) {
+          try {
+            return JSON.parse(withoutFence.slice(start, index + 1));
+          } catch {
+            return null;
+          }
+        }
+      }
+    }
+    return null;
+  }
+}
+
 function validateInput(body = {}) {
   const idea = cleanText(body.idea, 120);
   const location = cleanText(body.location, 120);
@@ -137,14 +178,17 @@ router.post('/business-plan', requireAuth, async (req, res) => {
       return res.status(502).json({ error: 'The AI service could not generate a plan right now. Please try again.' });
     }
 
-    const text = payload.candidates?.[0]?.content?.parts?.map((part) => part.text || '').join('').trim();
+    const candidate = payload.candidates?.[0];
+    const text = candidate?.content?.parts
+      ?.filter((part) => typeof part.text === 'string' && !part.thought)
+      .map((part) => part.text)
+      .join('')
+      .trim();
     if (!text) return res.status(502).json({ error: 'The AI service returned an empty plan. Please try again.' });
 
-    let plan;
-    try {
-      plan = JSON.parse(text);
-    } catch {
-      console.error('Gemini returned a business plan that was not valid JSON.');
+    const plan = parseGeneratedJson(text);
+    if (!plan || typeof plan !== 'object' || Array.isArray(plan)) {
+      console.error(`Gemini returned an invalid business plan format (finish reason: ${candidate?.finishReason || 'unknown'}, text length: ${text.length}).`);
       return res.status(502).json({ error: 'The AI service returned an unreadable plan. Please try again.' });
     }
 
