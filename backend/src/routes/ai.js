@@ -106,8 +106,12 @@ router.post('/business-plan', requireAuth, async (req, res) => {
       body: JSON.stringify({
         contents: [{ role: 'user', parts: [{ text: prompt }] }],
         generationConfig: {
-          responseMimeType: 'application/json',
-          responseSchema: planSchema,
+          responseFormat: {
+            text: {
+              mimeType: 'APPLICATION_JSON',
+              schema: planSchema,
+            },
+          },
           maxOutputTokens: 1800,
           temperature: 0.5,
         },
@@ -117,11 +121,16 @@ router.post('/business-plan', requireAuth, async (req, res) => {
 
     const payload = await upstream.json().catch(() => ({}));
     if (!upstream.ok) {
-      console.error(`Gemini business plan request failed with status ${upstream.status}`);
-      if (upstream.status === 401 || upstream.status === 403) {
+      const providerMessage = cleanText(payload.error?.message, 500).replaceAll(apiKey, '[redacted]');
+      console.error(`Gemini business plan request failed (${upstream.status}): ${providerMessage || 'No provider detail returned'}`);
+      if (upstream.status === 401 || upstream.status === 403 || /api.?key|credential/i.test(providerMessage)) {
         return res.status(502).json({ error: 'Gemini rejected the backend API key. Check its Gemini API access and restrictions.' });
       }
       if (upstream.status === 429) return res.status(429).json({ error: 'The AI service is busy or its quota has been reached. Try again later.' });
+      if (upstream.status === 404) return res.status(502).json({ error: `Gemini model “${model}” was not found. Check GEMINI_MODEL on Render.` });
+      if (upstream.status === 400 && providerMessage) {
+        return res.status(502).json({ error: `Gemini rejected the generation request: ${providerMessage}` });
+      }
       return res.status(502).json({ error: 'The AI service could not generate a plan right now. Please try again.' });
     }
 
