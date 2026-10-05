@@ -49,11 +49,62 @@ const products = [
 ];
 
 const materials = [
-  { id: 'sisal', name: 'Sisal & sweetgrass', type: 'Plant fibre', icon: Sprout, detail: 'Plant fibre for woven pieces, baskets, and durable craft products.' },
-  { id: 'natural-dyes', name: 'Natural pigments', type: 'Colour & finish', icon: Leaf, detail: 'Consider colour, safe handling, and a consistent finish for each product.' },
-  { id: 'cotton', name: 'Cotton fabric', type: 'Textile', icon: Trees, detail: 'Estimate fabric for apparel or soft goods, including cutting waste.' },
-  { id: 'paper', name: 'Paper & packaging', type: 'Presentation', icon: ClipboardList, detail: 'Plan story cards, labels, and recyclable packaging for finished kits.' },
-  { id: 'water', name: 'Water & finishing', type: 'Workshop needs', icon: Waves, detail: 'Account for water and other basic needs when arranging workshop work.' },
+  {
+    id: 'sisal-grass',
+    name: 'Sisal & local grasses',
+    type: 'Plant fibres',
+    icon: Sprout,
+    detail: 'Fibres used by Rwandan makers for woven crafts.',
+    makes: ['Agaseke-style baskets', 'Mats and trays', 'Woven decorations'],
+  },
+  {
+    id: 'banana-fibre',
+    name: 'Banana leaves & fibre',
+    type: 'Plant fibres',
+    icon: Leaf,
+    detail: 'Banana plant material can be prepared and woven into useful handmade pieces.',
+    makes: ['Baskets and mats', 'Decorative panels', 'Small ornaments'],
+  },
+  {
+    id: 'papyrus-reeds',
+    name: 'Papyrus & reeds',
+    type: 'Wetland plants',
+    icon: Waves,
+    detail: 'Papyrus and reeds are traditional weaving materials; use them with care for wetland habitats.',
+    makes: ['Woven mats', 'Baskets and containers', 'Home decorations'],
+  },
+  {
+    id: 'clay-earth',
+    name: 'Clay & coloured earth',
+    type: 'Earth materials',
+    icon: Trees,
+    detail: 'Clay and natural earth colours support pottery and decorative art practices.',
+    makes: ['Hand-shaped pottery', 'Decorative tiles', 'Painted craft pieces'],
+  },
+  {
+    id: 'imigongo-materials',
+    name: 'Cow dung & natural pigments',
+    type: 'Art materials',
+    icon: Sparkles,
+    detail: 'Materials used in Imigongo art. Work with an experienced local maker on safe preparation and handling.',
+    makes: ['Raised geometric art panels', 'Decorative wall pieces', 'Patterned art objects'],
+  },
+  {
+    id: 'bamboo',
+    name: 'Bamboo',
+    type: 'Plant material',
+    icon: ClipboardList,
+    detail: 'Rwanda has an established bamboo craft and processing value chain.',
+    makes: ['Small homeware', 'Decorative objects', 'Simple furniture'],
+  },
+  {
+    id: 'wood-seeds',
+    name: 'Responsibly sourced wood & seeds',
+    type: 'Natural materials',
+    icon: Trees,
+    detail: 'Use small offcuts and gathered seeds where they are locally available and sustainably sourced.',
+    makes: ['Carved ornaments', 'Beads and jewellery', 'Small keepsakes'],
+  },
 ];
 
 const sections = [
@@ -309,20 +360,32 @@ function ProductCard({ product, quantity, onAdd, onBuyNow, onViewDetails }) {
   );
 }
 
-function MaterialCard({ material, quantity, onChange }) {
+function MaterialCard({ material, selected, expanded, onExpand, onToggle }) {
   const Icon = material.icon;
   return (
-    <article className={`rounded-2xl border bg-white p-5 transition ${quantity > 0 ? 'border-[#A97561] shadow-sm' : 'border-[#EADBC8]'}`}>
-      <div className="mb-4 flex items-start justify-between gap-3">
-        <span className="grid h-10 w-10 place-items-center rounded-xl bg-[#F5EEE5] text-[#8D493A]"><Icon size={20} /></span>
-        <span className="rounded-full bg-[#F8F5F0] px-3 py-1 text-[11px] font-bold text-[#6F5B55]">{material.type}</span>
-      </div>
-      <h3 className="mb-2 text-base font-bold">{material.name}</h3>
-      <p className="mb-5 min-h-10 text-xs leading-5 text-[#6F5B55]">{material.detail}</p>
-      <div className="flex items-center justify-between rounded-xl bg-[#F8F5F0] p-2">
-        <span className="pl-2 text-xs font-semibold text-[#6F5B55]">Planning units</span>
-        <QuantityStepper value={quantity} label={material.name} onChange={(delta) => onChange(material.id, delta)} />
-      </div>
+    <article className={`overflow-hidden rounded-2xl border bg-white transition ${selected ? 'border-[#78916F] shadow-sm' : 'border-[#EADBC8]'}`}>
+      <button type="button" onClick={onExpand} aria-expanded={expanded} className="w-full p-5 text-left hover:bg-[#FDFBF7]">
+        <div className="mb-4 flex items-start justify-between gap-3">
+          <span className="grid h-10 w-10 place-items-center rounded-xl bg-[#F5EEE5] text-[#8D493A]"><Icon size={20} /></span>
+          <span className="rounded-full bg-[#F8F5F0] px-3 py-1 text-[11px] font-bold text-[#6F5B55]">{material.type}</span>
+        </div>
+        <div className="flex items-center justify-between gap-3">
+          <h3 className="m-0 text-base font-bold">{material.name}</h3>
+          <ArrowRight size={16} className={`shrink-0 text-[#8D493A] transition-transform ${expanded ? 'rotate-90' : ''}`} />
+        </div>
+        <p className="mb-0 mt-2 text-xs leading-5 text-[#6F5B55]">{material.detail}</p>
+      </button>
+      {expanded && (
+        <div className="border-t border-[#F0E7DE] px-5 pb-5 pt-4">
+          <p className="mb-2 text-xs font-bold text-[#874638]">Things you can make</p>
+          <ul className="mb-4 mt-0 list-disc space-y-1 pl-5 text-xs leading-5 text-[#6F5B55]">
+            {material.makes.map((item) => <li key={item}>{item}</li>)}
+          </ul>
+          <button type="button" onClick={() => onToggle(material.id)} aria-pressed={selected} className={`w-full rounded-xl px-4 py-3 text-xs font-bold transition ${selected ? 'border border-[#78916F] bg-[#EFF5EB] text-[#456040]' : 'bg-[#8D493A] text-white hover:bg-[#71392E]'}`}>
+            {selected ? 'Selected for business plan · Remove' : 'Select for business plan'}
+          </button>
+        </div>
+      )}
     </article>
   );
 }
@@ -576,6 +639,7 @@ export default function Dashboard({ onNavigate, onLogout }) {
   const [cart, setCart] = useState({});
   const [orders, setOrders] = useState(readOrders);
   const [selectedMaterials, setSelectedMaterials] = useState({});
+  const [expandedMaterial, setExpandedMaterial] = useState(null);
   const [businessForm, setBusinessForm] = useState(defaultBusinessForm);
   const [businessPlan, setBusinessPlan] = useState(null);
   const [planStale, setPlanStale] = useState(false);
@@ -596,8 +660,7 @@ export default function Dashboard({ onNavigate, onLogout }) {
   );
   const cartCount = cartItems.reduce((total, item) => total + item.quantity, 0);
   const cartTotal = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
-  const arrangedMaterials = materials.filter((material) => selectedMaterials[material.id] > 0);
-  const arrangedUnitCount = arrangedMaterials.reduce((total, material) => total + selectedMaterials[material.id], 0);
+  const arrangedMaterials = materials.filter((material) => selectedMaterials[material.id]);
 
   /* Toast auto-dismiss */
   useEffect(() => {
@@ -695,8 +758,8 @@ export default function Dashboard({ onNavigate, onLogout }) {
     }
   };
 
-  const updateMaterialPlan = (id, delta) => {
-    setSelectedMaterials((current) => ({ ...current, [id]: Math.max(0, (current[id] || 0) + delta) }));
+  const toggleMaterialSelection = (id) => {
+    setSelectedMaterials((current) => ({ ...current, [id]: !current[id] }));
     if (businessPlan) setPlanStale(true);
   };
 
@@ -718,8 +781,8 @@ export default function Dashboard({ onNavigate, onLogout }) {
           budget: Number(businessForm.budget),
           materials: arrangedMaterials.map((material) => ({
             name: material.name,
-            quantity: selectedMaterials[material.id],
             type: material.type,
+            uses: material.makes,
           })),
         }),
       });
@@ -885,26 +948,38 @@ export default function Dashboard({ onNavigate, onLogout }) {
           <section id="dashboard-materials" className="scroll-mt-8 border-t border-[#E7D9CA] pt-12 sm:pt-16">
             <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-[#EAF0E6] px-3 py-1.5 text-xs font-bold text-[#476344]"><Leaf size={13} /> Optional planning tool</div>
             <SectionHeading
-              eyebrow="Explore a making process"
-              title="Materials planning"
-              description="Curious about what goes into making things? Explore materials and quantities at your own pace."
-              aside={<span className="rounded-full bg-[#F3E7DE] px-3 py-1.5 text-xs font-semibold text-[#874638]">{arrangedUnitCount} planned units</span>}
+              eyebrow="Rwanda-inspired materials"
+              title="Choose materials for your idea"
+              description="Open a material to explore what makers can create with it, then select the materials you want included in your business plan."
+              aside={<span className="rounded-full bg-[#F3E7DE] px-3 py-1.5 text-xs font-semibold text-[#874638]">{arrangedMaterials.length} selected</span>}
             />
             <div className="mb-5 rounded-2xl border border-[#D8E3D2] bg-[#F2F6EF] p-4 text-sm leading-6 text-[#456040]">
-              This section is for planning only. It doesn’t change your cart or your orders.
+              These are examples of materials used by makers in Rwanda, not items for sale here. Local availability can vary; check with makers and suppliers in your area. Your selections only inform the business plan and never change your cart or purchases.
             </div>
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {materials.map((material) => (
-                <MaterialCard key={material.id} material={material} quantity={selectedMaterials[material.id] || 0} onChange={updateMaterialPlan} />
+                <MaterialCard
+                  key={material.id}
+                  material={material}
+                  selected={Boolean(selectedMaterials[material.id])}
+                  expanded={expandedMaterial === material.id}
+                  onExpand={() => setExpandedMaterial((current) => current === material.id ? null : material.id)}
+                  onToggle={toggleMaterialSelection}
+                />
               ))}
             </div>
-            <div className="mt-5 rounded-2xl bg-[#F5EEE5] p-5 sm:p-6">
-              <h3 className="mb-1 text-sm font-bold">Your materials notes</h3>
-              <p className="m-0 text-xs leading-5 text-[#6F5B55]">
-                {arrangedMaterials.length
-                  ? arrangedMaterials.map((material) => `${material.name} × ${selectedMaterials[material.id]}`).join(' · ')
-                  : 'Add materials here if you want to explore a making idea. You can skip this section entirely.'}
-              </p>
+            <div className="mt-5 flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-[#F5EEE5] p-5 sm:p-6">
+              <div>
+                <h3 className="mb-1 text-sm font-bold">Materials selected for your plan</h3>
+                <p className="m-0 text-xs leading-5 text-[#6F5B55]">
+                  {arrangedMaterials.length
+                    ? arrangedMaterials.map((material) => material.name).join(' · ')
+                    : 'Open a material and select it to include it in your business plan.'}
+                </p>
+              </div>
+              <button type="button" onClick={() => goTo('business')} disabled={!arrangedMaterials.length} className="inline-flex items-center gap-2 rounded-xl bg-[#8D493A] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#71392E] disabled:cursor-not-allowed disabled:opacity-45">
+                Continue to business plan <ArrowRight size={16} />
+              </button>
             </div>
           </section>
 
@@ -985,7 +1060,7 @@ export default function Dashboard({ onNavigate, onLogout }) {
                     <div className="rounded-xl bg-white p-4">
                       <p className="mb-1 text-xs font-bold text-[#874638]">Materials notes</p>
                       <ul className="m-0 space-y-1 pl-4 text-sm leading-6 text-[#6F5B55]">
-                        {businessPlan.materials.map((material) => <li key={material.name}>{material.name} · {material.quantity} planning units</li>)}
+                        {businessPlan.materials.map((material) => <li key={material.name}>{material.name}{material.uses?.length ? ` — ${material.uses.join(', ')}` : ''}</li>)}
                       </ul>
                     </div>
                   )}
