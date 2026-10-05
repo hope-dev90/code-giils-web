@@ -55,7 +55,7 @@ const materials = [
     type: 'Plant fibres',
     icon: Sprout,
     detail: 'Fibres used by Rwandan makers for woven crafts.',
-    makes: ['Agaseke-style baskets', 'Mats and trays', 'Woven decorations'],
+    makes: ['Agaseke-style baskets', 'Storage baskets', 'Floor mats', 'Serving trays', 'Coasters and placemats', 'Woven wall decorations'],
   },
   {
     id: 'banana-fibre',
@@ -63,7 +63,7 @@ const materials = [
     type: 'Plant fibres',
     icon: Leaf,
     detail: 'Banana plant material can be prepared and woven into useful handmade pieces.',
-    makes: ['Baskets and mats', 'Decorative panels', 'Small ornaments'],
+    makes: ['Woven baskets', 'Floor mats', 'Decorative wall panels', 'Small ornaments', 'Handmade toys', 'Gift decorations'],
   },
   {
     id: 'papyrus-reeds',
@@ -71,7 +71,7 @@ const materials = [
     type: 'Wetland plants',
     icon: Waves,
     detail: 'Papyrus and reeds are traditional weaving materials; use them with care for wetland habitats.',
-    makes: ['Woven mats', 'Baskets and containers', 'Home decorations'],
+    makes: ['Woven mats', 'Baskets and storage containers', 'Serving trays', 'Table placemats', 'Wall decorations', 'Small home baskets'],
   },
   {
     id: 'clay-earth',
@@ -79,7 +79,7 @@ const materials = [
     type: 'Earth materials',
     icon: Trees,
     detail: 'Clay and natural earth colours support pottery and decorative art practices.',
-    makes: ['Hand-shaped pottery', 'Decorative tiles', 'Painted craft pieces'],
+    makes: ['Hand-shaped pots and bowls', 'Plant pots', 'Clay beads', 'Decorative tiles', 'Small figurines', 'Painted craft pieces'],
   },
   {
     id: 'imigongo-materials',
@@ -87,7 +87,7 @@ const materials = [
     type: 'Art materials',
     icon: Sparkles,
     detail: 'Materials used in Imigongo art. Work with an experienced local maker on safe preparation and handling.',
-    makes: ['Raised geometric art panels', 'Decorative wall pieces', 'Patterned art objects'],
+    makes: ['Raised Imigongo art panels', 'Framed geometric wall art', 'Decorative panels', 'Patterned pottery details', 'Small cultural keepsakes'],
   },
   {
     id: 'bamboo',
@@ -95,7 +95,7 @@ const materials = [
     type: 'Plant material',
     icon: ClipboardList,
     detail: 'Rwanda has an established bamboo craft and processing value chain.',
-    makes: ['Small homeware', 'Decorative objects', 'Simple furniture'],
+    makes: ['Serving trays', 'Utensil holders', 'Small baskets', 'Lampshades', 'Stools', 'Simple furniture'],
   },
   {
     id: 'wood-seeds',
@@ -103,7 +103,7 @@ const materials = [
     type: 'Natural materials',
     icon: Trees,
     detail: 'Use small offcuts and gathered seeds where they are locally available and sustainably sourced.',
-    makes: ['Carved ornaments', 'Beads and jewellery', 'Small keepsakes'],
+    makes: ['Carved ornaments', 'Seed beads', 'Necklaces and bracelets', 'Keyrings', 'Small figurines', 'Personal keepsakes'],
   },
 ];
 
@@ -374,13 +374,14 @@ function MaterialCard({ material, selected, expanded, onExpand, onToggle }) {
           <ArrowRight size={16} className={`shrink-0 text-[#8D493A] transition-transform ${expanded ? 'rotate-90' : ''}`} />
         </div>
         <p className="mb-0 mt-2 text-xs leading-5 text-[#6F5B55]">{material.detail}</p>
+        <p className="mb-0 mt-3 text-[11px] font-semibold text-[#8D493A]">Explore {material.makes.length} things you could make</p>
       </button>
       {expanded && (
         <div className="border-t border-[#F0E7DE] px-5 pb-5 pt-4">
-          <p className="mb-2 text-xs font-bold text-[#874638]">Things you can make</p>
-          <ul className="mb-4 mt-0 list-disc space-y-1 pl-5 text-xs leading-5 text-[#6F5B55]">
-            {material.makes.map((item) => <li key={item}>{item}</li>)}
-          </ul>
+          <p className="mb-3 text-xs font-bold text-[#874638]">Examples of things you can make</p>
+          <div className="mb-4 grid gap-2 sm:grid-cols-2">
+            {material.makes.map((item) => <div key={item} className="flex items-center gap-2 rounded-xl bg-[#F8F5F0] px-3 py-2.5 text-xs font-medium leading-5 text-[#6F5B55]"><Sparkles size={13} className="shrink-0 text-[#A97561]" />{item}</div>)}
+          </div>
           <button type="button" onClick={() => onToggle(material.id)} aria-pressed={selected} className={`w-full rounded-xl px-4 py-3 text-xs font-bold transition ${selected ? 'border border-[#78916F] bg-[#EFF5EB] text-[#456040]' : 'bg-[#8D493A] text-white hover:bg-[#71392E]'}`}>
             {selected ? 'Selected for business plan · Remove' : 'Select for business plan'}
           </button>
