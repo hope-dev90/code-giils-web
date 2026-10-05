@@ -131,6 +131,9 @@ router.post('/business-plan', requireAuth, async (req, res) => {
       if (upstream.status === 400 && providerMessage) {
         return res.status(502).json({ error: `Gemini rejected the generation request: ${providerMessage}` });
       }
+      if (upstream.status >= 500) {
+        return res.status(502).json({ error: `Gemini returned a temporary server error (HTTP ${upstream.status}). Please try again shortly; if it continues, check the backend logs.` });
+      }
       return res.status(502).json({ error: 'The AI service could not generate a plan right now. Please try again.' });
     }
 
