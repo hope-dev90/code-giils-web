@@ -18,6 +18,7 @@ import {
   Waves,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
+import TribalLogo from '../../assets/Logo';
 import braceletImage from '../../assets/bracelet.png';
 import penImage from '../../assets/pen.png';
 import shirtImage from '../../assets/t-shirt.png';
@@ -204,7 +205,7 @@ export default function Dashboard({ onNavigate, onLogout }) {
     <div className="min-h-screen bg-[#F8F5F0] font-sans text-[#30221E]">
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-[#EADBC8] bg-[#FDFBF7] px-5 py-6 lg:flex">
         <button type="button" onClick={() => onNavigate?.('home')} className="mb-10 flex items-center gap-3 text-left">
-          <span className="grid h-10 w-10 place-items-center rounded-full border border-[#8D493A] text-xl text-[#8D493A]">✳</span>
+          <TribalLogo aria-label="UmucoCore logo" role="img" style={{ width: 40, height: 40 }} />
           <span className="text-lg font-bold tracking-tight text-[#8D493A]">UmucoCore</span>
         </button>
         <p className="mb-3 px-3 text-[10px] font-bold uppercase tracking-[.18em] text-[#9A877D]">Your workspace</p>
@@ -236,7 +237,7 @@ export default function Dashboard({ onNavigate, onLogout }) {
       <main className="px-4 pb-24 pt-6 sm:px-7 lg:ml-64 lg:px-10 lg:pb-16 lg:pt-8">
         <header className="mx-auto flex max-w-6xl items-center justify-between gap-4">
           <div className="flex items-center gap-3 lg:hidden">
-            <span className="grid h-9 w-9 place-items-center rounded-full border border-[#8D493A] text-lg text-[#8D493A]">✳</span>
+            <TribalLogo aria-label="UmucoCore logo" role="img" style={{ width: 36, height: 36 }} />
             <b className="text-[#8D493A]">UmucoCore</b>
           </div>
           <button type="button" onClick={() => onNavigate?.('home')} className="hidden items-center gap-2 text-sm font-semibold text-[#8D493A] lg:flex">
