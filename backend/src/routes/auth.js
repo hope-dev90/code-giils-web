@@ -14,21 +14,35 @@ const signSession = (user, expiresIn = '7d') => jwt.sign({ sub: String(user.id) 
 const safeUser = ({ id, name, email, role }) => ({ id, name, email, role });
 
 async function sendOtp(email, code, purpose) {
-  if (!process.env.SMTP_USER || !process.env.SMTP_APP_PASSWORD)
-    throw Object.assign(new Error('Email delivery is not configured. Set SMTP_USER and SMTP_APP_PASSWORD.'), { status: 503 });
+  // Support both Brevo-specific vars and generic SMTP vars.
+  // Priority: BREVO_USER / BREVO_KEY > SMTP_USER / SMTP_APP_PASSWORD
+  const smtpUser = process.env.BREVO_USER || process.env.SMTP_USER;
+  const smtpPass = process.env.BREVO_KEY || process.env.SMTP_APP_PASSWORD;
+
+  if (!smtpUser || !smtpPass)
+    throw Object.assign(
+      new Error('Email delivery is not configured. Set BREVO_USER and BREVO_KEY (or SMTP_USER and SMTP_APP_PASSWORD).'),
+      { status: 503 }
+    );
+
   const isSignup = purpose === 'signup';
   const subject = isSignup ? 'Your Umuco verification code' : 'Your Umuco password reset code';
   const title = isSignup ? 'Verify your email' : 'Reset your password';
-  const port = Number(process.env.SMTP_PORT || 465);
+
+  // Default to Brevo SMTP relay; override with SMTP_HOST / SMTP_PORT if needed.
+  const host = process.env.SMTP_HOST || 'smtp-relay.brevo.com';
+  const port = Number(process.env.SMTP_PORT || 587);
+
   const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST || 'smtp.gmail.com',
+    host,
     port,
     secure: port === 465,
-    auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_APP_PASSWORD.replace(/\s/g, '') },
+    auth: { user: smtpUser, pass: smtpPass.replace(/\s/g, '') },
   });
+
   try {
     await transporter.sendMail({
-      from: `Umuco <${process.env.AUTH_FROM_EMAIL || process.env.SMTP_USER}>`,
+      from: `Umuco <${process.env.AUTH_FROM_EMAIL || smtpUser}>`,
       to: email,
       subject,
       html: `<div style="font-family:Arial,sans-serif;max-width:520px;margin:auto;color:#2c1a14"><h2>${title}</h2><p>Your six-digit Umuco code is:</p><p style="font-size:32px;letter-spacing:8px;font-weight:bold">${code}</p><p>This code expires in 10 minutes. If you did not request it, you can ignore this email.</p></div>`,
@@ -36,7 +50,10 @@ async function sendOtp(email, code, purpose) {
     });
   } catch (error) {
     console.error('SMTP email delivery failed:', error.code || error.message);
-    throw Object.assign(new Error('Could not send the email. Check the SMTP host, port, username, password, and verified sender address.'), { status: 502 });
+    throw Object.assign(
+      new Error('Could not send the email. Check BREVO_USER, BREVO_KEY, and the verified sender address in your Brevo account.'),
+      { status: 502 }
+    );
   } finally {
     transporter.close();
   }

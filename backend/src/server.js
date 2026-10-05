@@ -7,7 +7,10 @@ import orderRoutes from './routes/orders.js';
 import adminRoutes from './routes/admin.js';
 
 const app = express();
-const clientOrigins = (process.env.CLIENT_URL || '*').split(',').map((origin) => origin.trim()).filter(Boolean);
+const configuredOrigins = (process.env.CLIENT_URL || '*').split(',').map((origin) => origin.trim()).filter(Boolean);
+const clientOrigins = configuredOrigins.length === 1 && configuredOrigins[0] === '*'
+  ? '*'
+  : [...new Set([...configuredOrigins, 'https://code-giils-web-9tk4.onrender.com'])];
 app.use(cors({ origin: clientOrigins.length === 1 && clientOrigins[0] === '*' ? '*' : clientOrigins }));
 app.use(express.json());
 

@@ -9,6 +9,7 @@ import Footer from "./components/landing/Footer";
 import LoginPage from "./components/landing/LoginPage";
 import SignUpPage from "./components/landing/AuthPage";
 import Dashboard from "./components/dashboard/Dashboard";
+import AdminDashboard from "./components/admin/AdminDashboard";
 import QRScanner from "./components/landing/QRScanner";
 import Discover from "./components/landing/Discover";
 import { gihangaStory } from './data/stories/gihanga';
@@ -104,7 +105,14 @@ function AppContent() {
 
     if (currentView === 'dashboard') {
       if (loading) return <div className="min-h-screen grid place-items-center bg-[#FDFBF7] text-[#8D493A]">Signing you in...</div>;
+      if (user?.role === 'ADMIN') return <AdminDashboard onNavigate={navigateTo} />;
       return <Dashboard onNavigate={navigateTo} onLogout={() => navigateTo('home')} />;
+    }
+
+    if (currentView === 'admin') {
+      if (loading) return <div className="min-h-screen grid place-items-center bg-[#FDFBF7] text-[#8D493A]">Loading…</div>;
+      if (!user || user.role !== 'ADMIN') return navigateTo('home') ?? null;
+      return <AdminDashboard onNavigate={navigateTo} />;
     }
 
     if (currentView === 'storyQuest') {
