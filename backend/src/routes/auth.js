@@ -178,6 +178,37 @@ router.post('/password/reset/complete', async (req, res, next) => {
   } catch (error) { return next(error); }
 });
 
+router.post('/google/credential', async (req, res, next) => {
+  try {
+    if (!process.env.GOOGLE_CLIENT_ID)
+      return res.status(503).json({ error: 'Google sign-in is not configured on the backend.' });
+
+    const credential = String(req.body.credential || '');
+    if (!credential) return res.status(400).json({ error: 'Google did not return a sign-in credential.' });
+
+    const googleResponse = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(credential)}`, {
+      signal: AbortSignal.timeout(5000),
+    });
+    const profile = await googleResponse.json().catch(() => ({}));
+    const validIssuer = ['accounts.google.com', 'https://accounts.google.com'].includes(profile.iss);
+    if (!googleResponse.ok || profile.aud !== process.env.GOOGLE_CLIENT_ID || !validIssuer ||
+        Number(profile.exp) <= Math.floor(Date.now() / 1000) || profile.email_verified !== 'true' || !profile.email || !profile.sub) {
+      return res.status(401).json({ error: 'Google sign-in could not be verified. Please try again.' });
+    }
+
+    const email = normalizeEmail(profile.email);
+    const name = String(profile.name || email.split('@')[0]).slice(0, 120);
+    let { rows } = await query('SELECT id,name,email,role FROM users WHERE email=$1', [email]);
+    if (!rows[0]) {
+      const passwordHash = await bcrypt.hash(jwt.sign({ nonce: Math.random() }, process.env.JWT_SECRET), 12);
+      ({ rows } = await query(`INSERT INTO users(name,email,password,email_verified_at)
+        VALUES($1,$2,$3,NOW()) ON CONFLICT(email) DO UPDATE SET email=EXCLUDED.email
+        RETURNING id,name,email,role`, [name, email, passwordHash]));
+    }
+    return res.json({ token: signSession(rows[0]), user: safeUser(rows[0]) });
+  } catch (error) { return next(error); }
+});
+
 router.get('/google', (req, res) => {
   if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET)
     return res.status(503).json({ error: 'Google sign-in is not configured on the backend.' });

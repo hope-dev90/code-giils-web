@@ -90,9 +90,11 @@ export function AuthProvider({ children }) {
   const verifyPasswordReset = useCallback((email, code) => authRequest('/password/reset/verify', { email: email.trim(), code }), []);
   const updatePassword = useCallback((password, resetToken) => authRequest('/password/reset/complete', { password, resetToken }), []);
 
-  const googleLogin = useCallback(() => {
-    localStorage.setItem('umuco_auth_redirect', 'dashboard');
-    window.location.assign(apiUrl('/api/auth/google'));
+  const googleLogin = useCallback(async (credential) => {
+    const data = await authRequest('/google/credential', { credential });
+    const nextUser = saveSession(data);
+    setUser(nextUser);
+    return { success: true, user: nextUser };
   }, []);
 
   const logout = useCallback(() => {

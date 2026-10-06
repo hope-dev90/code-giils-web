@@ -1,6 +1,7 @@
 // Set VITE_API_BASE to the backend origin when deploying. Locally this points
 // at the Express API in ../../backend.
 export const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:5000';
+export const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
 
 export function apiUrl(path = '') {
   if (/^https?:\/\//i.test(path)) return path;

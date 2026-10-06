@@ -32,13 +32,9 @@ Registration emails contain a six-digit code, valid for 10 minutes. A code can b
 Users who register get the USER role. ADMIN is assigned by the seed script or in the database:
 `UPDATE users SET role='ADMIN' WHERE email='you@example.com';`
 
-## Google OAuth
+## Google Sign-In
 
-In Google Cloud Console, create a Web application OAuth client. Add the backend callback URL as an Authorized redirect URI:
-
-`http://localhost:5000/api/auth/google/callback`
-
-Set its client ID and secret in the backend environment. For deployment, set `PUBLIC_API_URL` and register `<PUBLIC_API_URL>/api/auth/google/callback` with Google. The backend redirects successful sign-ins to the first URL in `CLIENT_URL`.
+In Google Cloud Console, use a Web application OAuth client and add the frontend origins under Authorized JavaScript origins, including `http://localhost:5173` and the Vercel production domain. Set `VITE_GOOGLE_CLIENT_ID` in the frontend environment (Vercel: Project Settings → Environment Variables). This client ID is public by design. Keep `GOOGLE_CLIENT_ID` on the backend set to the same value; keep `GOOGLE_CLIENT_SECRET` backend-only for the legacy redirect flow. The browser shows Google's sign-in prompt directly, then sends its credential to the API for verification and session creation.
 
 ## Purchase flow
 
@@ -48,7 +44,7 @@ View a product, sign in or register, then choose “Buy now”. Checkout is simu
 
 **Backend (Render):** use the repository's `render.yaml` with root directory `backend`. Set `DATABASE_URL`, `CLIENT_URL`, `PUBLIC_API_URL`, `JWT_SECRET`, `SMTP_USER`, and `SMTP_APP_PASSWORD`. Set `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, and `GOOGLE_REDIRECT_URI` to enable Google sign-in. The start command initializes the schema before launching the API. Railway works with the same variables.
 
-**Frontend (Vercel):** set `VITE_API_BASE` to the backend origin, for example `https://your-api.example.com`.
+**Frontend (Vercel):** set `VITE_API_BASE` to the backend origin, for example `https://your-api.example.com`, and set `VITE_GOOGLE_CLIENT_ID` to the Google Web client ID. These Vite variables are embedded at build time, so redeploy after changing them.
 
 ## Security notes
 

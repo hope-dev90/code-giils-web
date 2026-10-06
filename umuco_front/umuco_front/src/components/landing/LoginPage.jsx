@@ -214,11 +214,12 @@ function LoginPage({ onNavigate, onLoginSuccess, isGovLogin = false }) {
     }
   };
 
-  const handleGoogleSuccess = async () => {
+  const handleGoogleSuccess = async (credential) => {
     setIsLoading(true);
     setError('');
     try {
-      await googleLogin();
+      await googleLogin(credential);
+      onNavigate('dashboard');
     } catch (loginError) {
       setError(loginError.message || t('auth.googleError') || 'Google Sign-In failed');
     } finally {

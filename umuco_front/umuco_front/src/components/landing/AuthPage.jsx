@@ -552,11 +552,12 @@ function SignUpPage({ onNavigate }) {
     finally { setResendLoading(false); }
   };
 
-  const handleGoogleSuccess = async () => {
+  const handleGoogleSuccess = async (credential) => {
     setIsLoading(true);
     setError('');
     try {
-      await googleLogin();
+      await googleLogin(credential);
+      onNavigate('dashboard');
     } catch (loginError) {
       setError(loginError.message || 'Google sign-in is not available. Use email and password.');
     } finally {
