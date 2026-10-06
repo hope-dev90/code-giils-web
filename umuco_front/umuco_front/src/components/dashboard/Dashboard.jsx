@@ -7,7 +7,7 @@ import {
 import { useAuth } from '../../contexts/AuthContext';
 import { useLanguage } from '../../contexts/Language';
 import TribalLogo from '../../assets/Logo';
-import { apiJson } from '../../config/api';
+import { apiJson, vercelApiJson } from '../../config/api';
 import { STORY_LIBRARY, getRewardStory } from '../../data/stories';
 import { localizeStory } from '../../utils/storyLocalization';
 import StoryArticle from '../landing/StoryArticle';
@@ -759,7 +759,7 @@ export default function Dashboard({ onNavigate, onLogout }) {
     setPlanLoading(true);
     setPlanError('');
     try {
-      const plan = await apiJson('/api/ai/business-plan', {
+      const plan = await vercelApiJson('/api/ai/business-plan', {
         method: 'POST',
         body: JSON.stringify({
           ...businessForm,

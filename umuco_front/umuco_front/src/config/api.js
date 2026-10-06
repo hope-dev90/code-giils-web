@@ -42,3 +42,18 @@ export async function apiJson(path, options = {}) {
   }
   return data;
 }
+
+export async function vercelApiJson(path, options = {}) {
+  const token = localStorage.getItem('token');
+  const hasBody = options.body != null;
+  const isFormData = typeof FormData !== 'undefined' && options.body instanceof FormData;
+  const headers = {
+    ...(hasBody && !isFormData ? { 'Content-Type': 'application/json' } : {}),
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...(options.headers || {}),
+  };
+  const response = await fetch(path, { ...options, headers });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(data.error || data.message || `Request failed (${response.status})`);
+  return data;
+}

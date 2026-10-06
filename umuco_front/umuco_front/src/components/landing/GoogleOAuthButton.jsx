@@ -20,6 +20,7 @@ export default function GoogleOAuthButton({ onClick, className = '', disabled = 
         callback: ({ credential }) => {
           if (credential) callbackRef.current(credential);
         },
+        use_fedcm_for_button: true,
       });
       window.google.accounts.id.renderButton(buttonRef.current, {
         type: 'standard',
