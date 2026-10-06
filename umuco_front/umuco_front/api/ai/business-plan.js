@@ -86,6 +86,50 @@ function enforceUserLimit(userId) {
   return true;
 }
 
+function buildDemoPlan(input) {
+  const allocation = [
+    ['Materials and first stock', 30, 'Start with a small batch and confirm quality and local availability.'],
+    ['Tools and making equipment', 20, 'Buy only the tools needed to produce and test the first items.'],
+    ['Workspace and utilities', 15, 'Use a low-commitment workspace while testing demand.'],
+    ['Packaging and identity', 12, 'Create clear labels that explain the product and its story.'],
+    ['Marketing and sample sales', 10, 'Test a small set of product photos, samples, and local promotion.'],
+    ['Reserve', 13, 'Keep this amount available for unexpected costs and lessons from the first sales.'],
+  ];
+  let remaining = input.budget;
+  const budgetAllocation = allocation.map(([category, share, rationale], index) => {
+    const amountRwf = index === allocation.length - 1
+      ? remaining
+      : Math.floor((input.budget * share) / 100);
+    remaining -= amountRwf;
+    return { category, amountRwf, rationale };
+  });
+  const customer = input.customer || 'Local residents, visitors, and people looking for meaningful gifts';
+  const materialNames = input.materials.map(({ name }) => name);
+  const materialFocus = materialNames.length ? materialNames.join(', ') : 'locally available materials selected with makers';
+
+  return {
+    ...input,
+    demo: true,
+    summary: `${input.idea} is a demo-stage business concept for ${input.location}. Begin with a small collection using ${materialFocus}, test it with potential customers, and adjust the offer before committing the full budget.`,
+    targetCustomers: `${customer}. Interview a few potential customers in ${input.location} to learn what they value, where they shop, and what price feels reasonable.`,
+    valueProposition: `Useful, thoughtfully made products connected to Rwandan creativity and local maker stories. Show who made each item, how it is used, and what makes the materials distinctive.`,
+    marketingPlan: `Start with a small photo-led catalogue and direct conversations with customers in ${input.location}. Offer samples through a few local partners, collect feedback, and use the questions people ask to improve product descriptions and pricing.`,
+    budgetAllocation,
+    firstSteps: [
+      `Talk with potential customers in ${input.location} and record the products they ask for.`,
+      `Ask local makers to confirm material availability, preparation, quality, and realistic production time for ${materialFocus}.`,
+      `Make a small test batch for ${input.idea} and track the actual cost of each item.`,
+      'Show samples to customers, collect feedback, and revise the offer before producing more.',
+    ],
+    risks: [
+      'Material availability, sustainable sourcing, and permissions need to be checked with local suppliers and makers.',
+      'The proposed customer groups and prices are hypotheses; validate them through interviews and small sales tests.',
+      'Production time, packaging, transport, and unsold stock can reduce the money available for future batches.',
+    ],
+    generatedAt: new Date().toISOString(),
+  };
+}
+
 function parseGeneratedJson(text) {
   const cleaned = text.trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
   try { return JSON.parse(cleaned); } catch { return null; }
@@ -97,8 +141,6 @@ export default async function businessPlan(req, res) {
   if (!userId) return res.status(401).json({ error: 'Invalid or expired session.' });
 
   const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) return res.status(503).json({ error: 'AI generation is not configured. Set GEMINI_API_KEY in Vercel.' });
-
   const validated = validateInput(req.body);
   if (validated.error) return res.status(400).json({ error: validated.error });
   if (!enforceUserLimit(userId)) {
@@ -106,6 +148,8 @@ export default async function businessPlan(req, res) {
   }
 
   const input = validated.value;
+  if (process.env.BUSINESS_PLAN_MODE !== 'live') return res.json(buildDemoPlan(input));
+  if (!apiKey) return res.status(503).json({ error: 'Live AI generation is not configured. Set GEMINI_API_KEY in Vercel.' });
   const prompt = [
     'Create a useful first-draft business plan for a small business in Rwanda.',
     'Return only the requested JSON schema. Do not invent local prices, market statistics, permits, or cultural facts.',
@@ -186,6 +230,7 @@ export default async function businessPlan(req, res) {
 
     return res.json({
       ...input,
+      demo: false,
       summary: cleanText(plan.summary, 1400),
       targetCustomers: cleanText(plan.targetCustomers, 700),
       valueProposition: cleanText(plan.valueProposition, 700),

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  ArrowLeft, ArrowRight, BookOpen, BriefcaseBusiness, Check, ClipboardList, FileText,
-  Leaf, LogOut, Minus, Package, Plus, ShoppingBag, Sparkles, Sprout, Trees,
+  ArrowLeft, ArrowRight, BookOpen, BriefcaseBusiness, Check, FileText,
+  Leaf, LogOut, Minus, Package, Plus, ShoppingBag, Sparkles,
   Smartphone, Waves, X,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
@@ -15,6 +15,10 @@ import braceletImage from '../../assets/bracelet.png';
 import penImage from '../../assets/pen.png';
 import shirtImage from '../../assets/t-shirt.png';
 import heroImage from '../../assets/rwanda.jpg';
+import sisalImage from '../../assets/sisal.png';
+import bananaLeavesImage from '../../assets/banana leaves.png';
+import cowDungImage from '../../assets/cowdung.png';
+import woodsSeedsImage from '../../assets/woods-seeds.png';
 
 /* ------------------------------------------------------------------ */
 /* Data                                                                */
@@ -57,7 +61,7 @@ const materials = [
     id: 'sisal-grass',
     name: 'Sisal & local grasses',
     type: 'Plant fibres',
-    icon: Sprout,
+    image: sisalImage,
     detail: 'Fibres used by Rwandan makers for woven crafts.',
     makes: ['Agaseke-style baskets', 'Storage baskets', 'Floor mats', 'Serving trays', 'Coasters and placemats', 'Woven wall decorations'],
   },
@@ -65,49 +69,33 @@ const materials = [
     id: 'banana-fibre',
     name: 'Banana leaves & fibre',
     type: 'Plant fibres',
-    icon: Leaf,
+    image: bananaLeavesImage,
     detail: 'Banana plant material can be prepared and woven into useful handmade pieces.',
     makes: ['Woven baskets', 'Floor mats', 'Decorative wall panels', 'Small ornaments', 'Handmade toys', 'Gift decorations'],
-  },
-  {
-    id: 'papyrus-reeds',
-    name: 'Papyrus & reeds',
-    type: 'Wetland plants',
-    icon: Waves,
-    detail: 'Papyrus and reeds are traditional weaving materials; use them with care for wetland habitats.',
-    makes: ['Woven mats', 'Baskets and storage containers', 'Serving trays', 'Table placemats', 'Wall decorations', 'Small home baskets'],
-  },
-  {
-    id: 'clay-earth',
-    name: 'Clay & coloured earth',
-    type: 'Earth materials',
-    icon: Trees,
-    detail: 'Clay and natural earth colours support pottery and decorative art practices.',
-    makes: ['Hand-shaped pots and bowls', 'Plant pots', 'Clay beads', 'Decorative tiles', 'Small figurines', 'Painted craft pieces'],
   },
   {
     id: 'imigongo-materials',
     name: 'Cow dung & natural pigments',
     type: 'Art materials',
-    icon: Sparkles,
+    image: cowDungImage,
     detail: 'Materials used in Imigongo art. Work with an experienced local maker on safe preparation and handling.',
     makes: ['Raised Imigongo art panels', 'Framed geometric wall art', 'Decorative panels', 'Patterned pottery details', 'Small cultural keepsakes'],
-  },
-  {
-    id: 'bamboo',
-    name: 'Bamboo',
-    type: 'Plant material',
-    icon: ClipboardList,
-    detail: 'Rwanda has an established bamboo craft and processing value chain.',
-    makes: ['Serving trays', 'Utensil holders', 'Small baskets', 'Lampshades', 'Stools', 'Simple furniture'],
   },
   {
     id: 'wood-seeds',
     name: 'Responsibly sourced wood & seeds',
     type: 'Natural materials',
-    icon: Trees,
+    image: woodsSeedsImage,
     detail: 'Use small offcuts and gathered seeds where they are locally available and sustainably sourced.',
     makes: ['Carved ornaments', 'Seed beads', 'Necklaces and bracelets', 'Keyrings', 'Small figurines', 'Personal keepsakes'],
+  },
+  {
+    id: 'water-resource',
+    name: 'Clean water access',
+    type: 'Workshop resource',
+    icon: Waves,
+    detail: 'Plan reliable access to clean water for preparing fibres, cleaning tools, and finishing products.',
+    makes: ['Preparing plant fibres', 'Cleaning tools and work surfaces', 'Mixing natural pigments', 'Washing and finishing products'],
   },
 ];
 
@@ -127,9 +115,6 @@ const defaultBusinessForm = {
 };
 
 const ORDERS_KEY = 'umuco_orders_v2';
-
-// Set to false once requestMobileMoneyPayment() talks to your real payment backend.
-const PAYMENT_TEST_MODE = true;
 
 /* ------------------------------------------------------------------ */
 /* Helpers                                                             */
@@ -354,7 +339,9 @@ function MaterialCard({ material, selected, expanded, onExpand, onToggle }) {
     <article className={`overflow-hidden rounded-2xl border bg-white transition-all duration-300 ${selected ? 'border-2 border-[#8D493A] bg-[#FFFDFB] shadow-lg ring-2 ring-[#8D493A]/10 sm:col-span-2 xl:col-span-3' : 'border-[#EADBC8]'}`}>
       <button type="button" onClick={onExpand} aria-expanded={expanded} className={`w-full text-left hover:bg-[#FDFBF7] ${selected ? 'p-6 sm:p-8' : 'p-5'}`}>
         <div className="mb-4 flex items-start justify-between gap-3">
-          <span className={`grid place-items-center rounded-xl bg-[#F5EEE5] text-[#8D493A] ${selected ? 'size-14' : 'size-10'}`}><Icon size={selected ? 26 : 20} /></span>
+          <span className={`grid shrink-0 place-items-center overflow-hidden rounded-xl bg-[#F5EEE5] text-[#8D493A] ${selected ? 'size-20' : 'size-14'}`}>
+            {material.image ? <img src={material.image} alt="" className="h-full w-full object-cover" /> : <Icon size={selected ? 30 : 22} />}
+          </span>
           <span className="rounded-full bg-[#F8F5F0] px-3 py-1 text-[11px] font-bold text-[#6F5B55]">{material.type}</span>
         </div>
         <div className="flex items-center justify-between gap-3">
@@ -524,8 +511,6 @@ function PaymentDialog({ items, onPay, onClose, onViewOrders }) {
             <span>Check your phone ({maskPhone(local)}) and approve the payment of {formatRwf(total)}.</span>
           </div>
         )}
-
-        {PAYMENT_TEST_MODE && <p className="mb-0 mt-4 rounded-xl bg-[#FFF6EA] p-3 text-xs leading-5 text-[#7A4A1C]">Test mode: no money is taken and no message is sent to your phone.</p>}
 
         <div className="mt-5 flex flex-wrap gap-3">
           <button type="submit" disabled={waiting} className="inline-flex items-center gap-2 rounded-xl bg-[#8D493A] px-5 py-3 text-sm font-bold text-white hover:bg-[#71392E] disabled:cursor-not-allowed disabled:opacity-60">
@@ -1023,7 +1008,10 @@ export default function Dashboard({ onNavigate, onLogout }) {
                     <p className="mb-2 text-xs font-bold tracking-wide text-[#8D493A]">Your starter idea</p>
                     <h3 className="m-0 text-xl font-bold">{businessPlan.idea} · {businessPlan.location}</h3>
                   </div>
-                  <span className="rounded-full bg-white px-3 py-1 text-[11px] font-semibold text-[#6F5B55]">Created {formatDate(businessPlan.generatedAt)}</span>
+                  <div className="flex flex-wrap items-center gap-2">
+                    {businessPlan.demo && <span className="rounded-full border border-[#D8E3D2] bg-[#F2F6EF] px-3 py-1 text-[11px] font-bold text-[#456040]">Demo plan · sample data</span>}
+                    <span className="rounded-full bg-white px-3 py-1 text-[11px] font-semibold text-[#6F5B55]">Created {formatDate(businessPlan.generatedAt)}</span>
+                  </div>
                 </div>
                 {planStale && (
                   <p role="status" className="mb-4 rounded-xl border border-[#E8C9A8] bg-[#FFF6EA] p-3 text-xs text-[#7A4A1C]">

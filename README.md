@@ -44,7 +44,7 @@ View a product, sign in or register, then choose “Buy now”. Checkout is simu
 
 **Backend (Render):** use the repository's `render.yaml` with root directory `backend`. Set `DATABASE_URL`, `CLIENT_URL`, `PUBLIC_API_URL`, `JWT_SECRET`, `SMTP_USER`, and `SMTP_APP_PASSWORD`. Set `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, and `GOOGLE_REDIRECT_URI` to enable Google sign-in. The start command initializes the schema before launching the API. Railway works with the same variables.
 
-**Frontend (Vercel):** set `VITE_API_BASE` to the backend origin, for example `https://your-api.example.com`, and set `VITE_GOOGLE_CLIENT_ID` to the Google Web client ID. For business-plan generation, also set `GEMINI_API_KEY`, `GEMINI_MODEL` (optional; defaults to `gemini-3.8-flash`), and `JWT_SECRET` to the same signing secret used by Render. Keep these as server environment variables without a `VITE_` prefix. The plan request now runs on Vercel and no longer needs to wake Render. Vite variables are embedded at build time, so redeploy after changing them.
+**Frontend (Vercel):** set `VITE_API_BASE` to the backend origin, for example `https://your-api.example.com`, and set `VITE_GOOGLE_CLIENT_ID` to the Google Web client ID. Set `JWT_SECRET` to the same signing secret used by Render. Business-plan generation defaults to immediate demo data and requires no Gemini key. To enable live Gemini generation, set `BUSINESS_PLAN_MODE=live`, `GEMINI_API_KEY`, and optionally `GEMINI_MODEL` (defaults to `gemini-3.8-flash`). Keep these as server environment variables without a `VITE_` prefix. The plan request runs on Vercel and does not wake Render. Vite variables are embedded at build time, so redeploy after changing them.
 
 ## Security notes
 
