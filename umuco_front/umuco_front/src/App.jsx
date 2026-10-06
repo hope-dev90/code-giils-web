@@ -12,7 +12,7 @@ import Dashboard from "./components/dashboard/Dashboard";
 import AdminDashboard from "./components/admin/AdminDashboard";
 import QRScanner from "./components/landing/QRScanner";
 import Discover from "./components/landing/Discover";
-import { STORY_LIBRARY as STORIES } from './data/stories';
+import { gihangaStory, STORY_LIBRARY as STORIES } from './data/stories';
 
 function AppContent() {
   const { user, loading } = useAuth();

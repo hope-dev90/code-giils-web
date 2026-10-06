@@ -3,6 +3,8 @@ import { nyirarucyabaStory } from './nyirarucyaba';
 import { ruganzuStory } from './ruganzu';
 import { kigeliStory } from './kigeli';
 
+export { gihangaStory };
+
 export const STORY_LIBRARY = [gihangaStory, nyirarucyabaStory, ruganzuStory, kigeliStory];
 export const STORY_BY_ID = Object.fromEntries(STORY_LIBRARY.map((story) => [story.id, story]));
 
