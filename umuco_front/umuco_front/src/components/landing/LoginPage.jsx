@@ -205,8 +205,8 @@ function LoginPage({ onNavigate, onLoginSuccess, isGovLogin = false }) {
     setError('');
     try {
       const result = await login(formData.email, formData.password, formData.rememberMe);
-      onLoginSuccess?.(result.user);
-      onNavigate('dashboard');
+      if (onLoginSuccess) onLoginSuccess(result.user);
+      else onNavigate('dashboard');
     } catch (loginError) {
       setError(loginError.message || 'Could not sign you in. Check your email and password.');
     } finally {
@@ -218,8 +218,9 @@ function LoginPage({ onNavigate, onLoginSuccess, isGovLogin = false }) {
     setIsLoading(true);
     setError('');
     try {
-      await googleLogin(credential);
-      onNavigate('dashboard');
+      const result = await googleLogin(credential);
+      if (onLoginSuccess) onLoginSuccess(result.user);
+      else onNavigate('dashboard');
     } catch (loginError) {
       setError(loginError.message || t('auth.googleError') || 'Google Sign-In failed');
     } finally {

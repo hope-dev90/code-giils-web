@@ -446,7 +446,7 @@ function PasswordStrength({ password }) {
   );
 }
 
-function SignUpPage({ onNavigate }) {
+function SignUpPage({ onNavigate, onAuthenticated }) {
   const { t } = useLanguage();
   const { register, verifyRegistration, resendRegistrationCode, googleLogin } = useAuth();
   const [showExplorerModal, setShowExplorerModal] = useState(false);
@@ -556,8 +556,9 @@ function SignUpPage({ onNavigate }) {
     setIsLoading(true);
     setError('');
     try {
-      await googleLogin(credential);
-      onNavigate('dashboard');
+      const result = await googleLogin(credential);
+      if (onAuthenticated) onAuthenticated(result.user);
+      else onNavigate('dashboard');
     } catch (loginError) {
       setError(loginError.message || 'Google sign-in is not available. Use email and password.');
     } finally {
@@ -623,7 +624,7 @@ function SignUpPage({ onNavigate }) {
             <div className="w-12 h-[2px] bg-[#8D493A]/30 rounded-full mb-10" />
 
             <button
-              onClick={() => onNavigate('dashboard')}
+              onClick={() => onAuthenticated ? onAuthenticated() : onNavigate('dashboard')}
               className="w-full bg-[#8D493A] hover:bg-[#3E2723] text-white py-3.5 px-6 rounded-xl font-semibold text-sm tracking-wide transition-colors duration-200 mb-3"
             >
               {selectedExplorer ? `${selectedExplorerCopy.cta} \u2192` : 'Enter your dashboard \u2192'}

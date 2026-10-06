@@ -142,20 +142,20 @@ function Hero({ onNavigate }) {
             {t('hero.description')}
           </p>
 
-            <div className="hero-rise flex flex-wrap items-center gap-3 sm:gap-4" style={{ '--i': 3 }}>
+            <div className="hero-rise flex w-full flex-nowrap items-center gap-2 sm:w-auto sm:gap-4" style={{ '--i': 3 }}>
               <button
                 onClick={() => onNavigate('signup')}
-                className="group inline-flex items-center gap-3 h-[52px] pl-6 pr-2 bg-[#8D493A] hover:bg-[#3E2723] text-[#FDFBF7] rounded-full text-sm font-bold tracking-wide shadow-[0_12px_24px_-10px_rgba(141,73,58,0.75)] transition-colors duration-300 whitespace-nowrap cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8D493A]"
+                className="group inline-flex min-w-0 flex-1 items-center justify-between gap-1 h-[52px] pl-3 pr-1.5 bg-[#8D493A] hover:bg-[#3E2723] text-[#FDFBF7] rounded-full text-[10px] font-bold tracking-wide shadow-[0_12px_24px_-10px_rgba(141,73,58,0.75)] transition-colors duration-300 whitespace-nowrap cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8D493A] sm:flex-none sm:justify-center sm:gap-3 sm:pl-6 sm:pr-2 sm:text-sm"
               >
                 <span>{t('hero.getInvolved')}</span>
-                <span className="grid place-items-center w-9 h-9 rounded-full bg-[#FDFBF7] text-[#8D493A] transition-transform duration-300 group-hover:translate-x-0.5">
+                <span className="grid size-8 shrink-0 place-items-center rounded-full bg-[#FDFBF7] text-[#8D493A] transition-transform duration-300 group-hover:translate-x-0.5 sm:size-9">
                   <ArrowRight className="w-4 h-4" />
                 </span>
               </button>
 
               <button
                 onClick={() => document.getElementById('archive')?.scrollIntoView({ behavior: 'smooth' })}
-                className="h-[52px] px-6 border-2 border-[#8D493A]/30 hover:border-[#8D493A] hover:bg-[#8D493A]/5 text-[#8D493A] rounded-full text-sm font-bold tracking-wide transition-colors duration-300 whitespace-nowrap cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8D493A]"
+                className="h-[52px] min-w-0 flex-1 px-2 border-2 border-[#8D493A]/30 hover:border-[#8D493A] hover:bg-[#8D493A]/5 text-[#8D493A] rounded-full text-[10px] font-bold tracking-wide transition-colors duration-300 whitespace-nowrap cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8D493A] sm:flex-none sm:px-6 sm:text-sm"
               >
                 {t('hero.exploreMore')}
               </button>

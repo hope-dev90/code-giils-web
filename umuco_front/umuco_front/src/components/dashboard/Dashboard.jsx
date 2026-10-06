@@ -788,7 +788,7 @@ export default function Dashboard({ onNavigate, onLogout }) {
   const inputClass = 'mt-2 w-full rounded-xl border border-[#EADBC8] bg-[#FDFBF7] px-3 py-3 text-sm font-medium text-[#30221E]';
 
   return (
-    <div className="min-h-screen bg-[#F8F5F0] font-sans text-[#30221E]">
+    <div className="min-h-screen bg-[#F8F5F0] font-poppins text-[#30221E]">
       {/* Sidebar (desktop) */}
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-[#EADBC8] bg-[#FDFBF7] px-5 py-6 lg:flex">
         <button type="button" onClick={() => onNavigate?.('home')} className="mb-10 flex items-center gap-3 text-left">
@@ -867,7 +867,7 @@ export default function Dashboard({ onNavigate, onLogout }) {
             >
               <div className="relative max-w-2xl">
                 <p className="mb-3 text-xs font-bold tracking-wide text-[#F4D5C6]">UmucoCore · Made to mean something</p>
-                <h1 className="mb-4 max-w-xl text-4xl font-bold leading-tight tracking-tight sm:text-5xl lg:text-6xl">A piece of culture. A story of your own.</h1>
+                <h1 className="mb-4 max-w-xl text-4xl font-bold leading-tight tracking-tight sm:text-5xl lg:text-6xl"><span className="text-[#2C1A14]">A piece of culture.</span>{' '}<span className="text-[#FDFBF7]">A story of your own.</span></h1>
                 <p className="mb-7 max-w-xl text-sm leading-7 text-white/90 sm:text-base">Discover thoughtful keepsakes inspired by Rwandan heritage, creative expression, and the stories that bring us closer.</p>
                 <button
                   type="button"

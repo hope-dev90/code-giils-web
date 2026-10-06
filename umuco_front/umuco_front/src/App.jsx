@@ -14,6 +14,8 @@ import QRScanner from "./components/landing/QRScanner";
 import Discover from "./components/landing/Discover";
 import { gihangaStory, STORY_LIBRARY as STORIES } from './data/stories';
 
+const PENDING_STORY_KEY = 'umuco_pending_story_id';
+
 function AppContent() {
   const { user, loading } = useAuth();
   const [currentView, setCurrentView] = useState(() => {
@@ -21,7 +23,8 @@ function AppContent() {
       return localStorage.getItem('umuco_auth_redirect') || 'dashboard';
     }
     const recovery = new URLSearchParams(window.location.search).has('resetPassword') || window.location.hash.includes('type=recovery');
-    return recovery ? 'login' : 'home';
+    if (recovery || localStorage.getItem(PENDING_STORY_KEY)) return 'login';
+    return 'home';
   });
   const [activeSection, setActiveSection] = useState('Home'); 
   const [scannedStoryId, setScannedStoryId] = useState(gihangaStory.id);
@@ -40,11 +43,28 @@ function AppContent() {
   }, [loading, user, navigateTo]);
 
   const handleStoryScan = (rawValue) => {
-    const story = STORIES.find(({ id }) => rawValue.includes(id));
-    if (!story) return false;
+    const story = STORIES.find(({ id }) => rawValue.toLowerCase().includes(id.toLowerCase()))
+      || gihangaStory;
     setScannedStoryId(story.id);
+    if (!user) {
+      localStorage.setItem(PENDING_STORY_KEY, story.id);
+      navigateTo('login');
+      return true;
+    }
     navigateTo('storyQuest');
     return true;
+  };
+
+  const handleAuthComplete = () => {
+    const pendingStoryId = localStorage.getItem(PENDING_STORY_KEY);
+    const pendingStory = STORIES.find(({ id }) => id === pendingStoryId);
+    if (pendingStory) {
+      localStorage.removeItem(PENDING_STORY_KEY);
+      setScannedStoryId(pendingStory.id);
+      navigateTo('storyQuest');
+      return;
+    }
+    navigateTo('dashboard');
   };
 
   useEffect(() => {
@@ -91,11 +111,11 @@ function AppContent() {
 
   const renderView = () => {
     if (currentView === 'login') {
-      return <LoginPage onNavigate={navigateTo} />;
+      return <LoginPage onNavigate={navigateTo} onLoginSuccess={handleAuthComplete} />;
     }
 
     if (currentView === 'signup') {
-      return <SignUpPage onNavigate={navigateTo} />;
+      return <SignUpPage onNavigate={navigateTo} onAuthenticated={handleAuthComplete} />;
     }
 
     if (currentView === 'dashboard') {
