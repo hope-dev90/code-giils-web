@@ -351,18 +351,18 @@ function ProductCard({ product, quantity, onAdd, onBuyNow, onViewDetails }) {
 function MaterialCard({ material, selected, expanded, onExpand, onToggle }) {
   const Icon = material.icon;
   return (
-    <article className={`overflow-hidden rounded-2xl border bg-white transition ${selected ? 'border-[#78916F] shadow-sm' : 'border-[#EADBC8]'}`}>
-      <button type="button" onClick={onExpand} aria-expanded={expanded} className="w-full p-5 text-left hover:bg-[#FDFBF7]">
+    <article className={`overflow-hidden rounded-2xl border bg-white transition-all duration-300 ${selected ? 'border-2 border-[#8D493A] bg-[#FFFDFB] shadow-lg ring-2 ring-[#8D493A]/10 sm:col-span-2 xl:col-span-3' : 'border-[#EADBC8]'}`}>
+      <button type="button" onClick={onExpand} aria-expanded={expanded} className={`w-full text-left hover:bg-[#FDFBF7] ${selected ? 'p-6 sm:p-8' : 'p-5'}`}>
         <div className="mb-4 flex items-start justify-between gap-3">
-          <span className="grid h-10 w-10 place-items-center rounded-xl bg-[#F5EEE5] text-[#8D493A]"><Icon size={20} /></span>
+          <span className={`grid place-items-center rounded-xl bg-[#F5EEE5] text-[#8D493A] ${selected ? 'size-14' : 'size-10'}`}><Icon size={selected ? 26 : 20} /></span>
           <span className="rounded-full bg-[#F8F5F0] px-3 py-1 text-[11px] font-bold text-[#6F5B55]">{material.type}</span>
         </div>
         <div className="flex items-center justify-between gap-3">
-          <h3 className="m-0 text-base font-bold">{material.name}</h3>
+          <h3 className={`m-0 font-bold ${selected ? 'text-xl sm:text-2xl' : 'text-base'}`}>{material.name}</h3>
           <ArrowRight size={16} className={`shrink-0 text-[#8D493A] transition-transform ${expanded ? 'rotate-90' : ''}`} />
         </div>
-        <p className="mb-0 mt-2 text-xs leading-5 text-[#6F5B55]">{material.detail}</p>
-        <p className="mb-0 mt-3 text-[11px] font-semibold text-[#8D493A]">Explore {material.makes.length} things you could make</p>
+        <p className={`mb-0 mt-2 leading-6 text-[#6F5B55] ${selected ? 'text-sm' : 'text-xs leading-5'}`}>{material.detail}</p>
+        <p className="mb-0 mt-3 text-[11px] font-semibold text-[#8D493A]">{selected ? 'Selected for your business plan' : `Explore ${material.makes.length} things you could make`}</p>
       </button>
       {expanded && (
         <div className="border-t border-[#F0E7DE] px-5 pb-5 pt-4">
@@ -942,7 +942,7 @@ export default function Dashboard({ onNavigate, onLogout }) {
               These are examples of materials used by makers in Rwanda, not items for sale here. Local availability can vary; check with makers and suppliers in your area. Your selections only inform the business plan and never change your cart or purchases.
             </div>
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-              {materials.map((material) => (
+              {[...materials].sort((a, b) => Number(Boolean(selectedMaterials[b.id])) - Number(Boolean(selectedMaterials[a.id]))).map((material) => (
                 <MaterialCard
                   key={material.id}
                   material={material}

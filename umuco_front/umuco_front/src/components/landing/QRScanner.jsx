@@ -23,12 +23,21 @@ export default function QRScanner({ onScan }) {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const fileRef = useRef(null);
+  const previewRef = useRef(null);
   const onScanRef = useRef(onScan);
   const [scanning, setScanning] = useState(false);
   const [error, setError] = useState('');
   const [qrText, setQrText] = useState('');
 
   useEffect(() => { onScanRef.current = onScan; }, [onScan]);
+
+  useEffect(() => {
+    if (!scanning) return undefined;
+    const frame = window.requestAnimationFrame(() => {
+      previewRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [scanning]);
 
   if (!canvasRef.current && typeof document !== 'undefined') {
     canvasRef.current = document.createElement('canvas');
@@ -171,8 +180,8 @@ export default function QRScanner({ onScan }) {
           </div>
         </div>
 
-        <div className="overflow-hidden rounded-3xl border border-[#EADBC8] bg-white p-3 shadow-sm sm:p-5">
-          {scanning ? <div className="relative aspect-video overflow-hidden rounded-2xl bg-[#30221E]">
+        <div ref={previewRef} className="overflow-hidden rounded-3xl border border-[#EADBC8] bg-white p-3 shadow-sm sm:p-5">
+          {scanning ? <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-[#30221E] sm:aspect-video">
             <video ref={videoRef} className="h-full w-full object-cover" muted playsInline autoPlay aria-label="Camera QR scanner" />
             <div className="pointer-events-none absolute inset-0 grid place-items-center"><div className="relative h-44 w-44 rounded-2xl border-2 border-[#FCDFD3] shadow-[0_0_0_999px_rgba(25,16,13,.22)] sm:h-56 sm:w-56"><span className="absolute -left-1 -top-1 h-6 w-6 border-l-4 border-t-4 border-white" /><span className="absolute -right-1 -top-1 h-6 w-6 border-r-4 border-t-4 border-white" /><span className="absolute -bottom-1 -left-1 h-6 w-6 border-b-4 border-l-4 border-white" /><span className="absolute -bottom-1 -right-1 h-6 w-6 border-b-4 border-r-4 border-white" /></div></div>
             <p className="absolute bottom-4 left-0 right-0 text-center text-xs font-semibold text-white">Center a story QR code in the frame</p>
