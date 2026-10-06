@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  ArrowLeft, ArrowRight, BookOpen, BriefcaseBusiness, Check, FileText,
+  ArrowLeft, ArrowRight, BookOpen, BriefcaseBusiness, Check, Download, FileText,
   Leaf, LogOut, Minus, Package, Plus, ShoppingBag, Sparkles,
   Smartphone, Waves, X,
 } from 'lucide-react';
@@ -152,6 +152,45 @@ function formatDate(iso) {
   return Number.isNaN(date.getTime())
     ? ''
     : date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, (character) => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+  })[character]);
+}
+
+function printBusinessPlan(plan) {
+  const printWindow = window.open('', '_blank');
+  if (!printWindow) return false;
+
+  const materials = plan.materials.map((material) => `<li>${escapeHtml(material.name)}${material.uses?.length ? ` — ${escapeHtml(material.uses.join(', '))}` : ''}</li>`).join('');
+  const allocation = plan.budgetAllocation.map((item) => `<li><strong>${escapeHtml(item.category)}: ${formatRwf(item.amountRwf)}</strong> — ${escapeHtml(item.rationale)}</li>`).join('');
+  const firstSteps = plan.firstSteps.map((step) => `<li>${escapeHtml(step)}</li>`).join('');
+  const risks = plan.risks.map((risk) => `<li>${escapeHtml(risk)}</li>`).join('');
+  const section = (title, content) => `<section><h2>${title}</h2>${content}</section>`;
+
+  printWindow.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${escapeHtml(plan.idea)} - Business Plan</title><style>
+    *{box-sizing:border-box}body{max-width:850px;margin:40px auto;padding:0 32px;color:#30221e;font:14px/1.6 Arial,sans-serif}
+    h1{margin:0 0 6px;color:#2c1a14;font-size:30px}h2{margin:0 0 8px;color:#874638;font-size:16px}
+    .meta{margin:0 0 28px;color:#6f5b55}.demo{display:inline-block;margin:0 0 10px;padding:3px 9px;border:1px solid #d8e3d2;border-radius:20px;color:#456040;font-size:11px;font-weight:bold}
+    section{margin:0 0 22px;break-inside:avoid}p{margin:0;color:#514742}ul,ol{margin:0;padding-left:22px}li{margin:0 0 5px}
+    @media print{body{margin:0 auto;padding:0 12mm}@page{margin:16mm}}
+  </style></head><body>
+    ${plan.demo ? '<p class="demo">Demo plan · sample data</p>' : ''}
+    <h1>${escapeHtml(plan.idea)} · ${escapeHtml(plan.location)}</h1>
+    <p class="meta">UmucoCore business plan · ${escapeHtml(formatDate(plan.generatedAt))} · Starting budget ${escapeHtml(formatRwf(plan.budget))}</p>
+    ${section('Executive summary', `<p>${escapeHtml(plan.summary)}</p>`)}
+    ${section('Customers and value', `<p>${escapeHtml(plan.targetCustomers)}</p><p><strong>Why they may choose it:</strong> ${escapeHtml(plan.valueProposition)}</p>`)}
+    ${materials ? section('Materials notes', `<ul>${materials}</ul>`) : ''}
+    ${section('Marketing approach', `<p>${escapeHtml(plan.marketingPlan)}</p>`)}
+    ${section('Suggested budget allocation', `<ul>${allocation}</ul>`)}
+    ${section('Practical first steps', `<ol>${firstSteps}</ol>`)}
+    ${section('Risks to check', `<ul>${risks}</ul>`)}
+  </body></html>`);
+  printWindow.document.close();
+  window.setTimeout(() => { printWindow.focus(); printWindow.print(); }, 300);
+  return true;
 }
 
 /** Accepts 078 123 4567, 0781234567, +250781234567, 250781234567 and returns 0781234567. */
@@ -318,7 +357,7 @@ function ProductCard({ product, quantity, onAdd, onBuyNow, onViewDetails }) {
           </div>
         )}
         <div className="grid grid-cols-2 gap-2">
-          <button type="button" onClick={() => onAdd(product, 1)} className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#8D493A] px-3 py-3 text-xs font-bold text-white transition hover:bg-[#71392E]">
+        <button type="button" onClick={(event) => onAdd(product, 1, event)} className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#8D493A] px-3 py-3 text-xs font-bold text-white transition hover:bg-[#71392E]">
             <Plus size={15} /> Add to cart
           </button>
           <button type="button" onClick={() => onViewDetails(product)} className="rounded-xl border border-[#DCC9B9] bg-white px-3 py-3 text-xs font-bold text-[#874638] transition hover:bg-[#F8F5F0]">
@@ -618,9 +657,11 @@ export default function Dashboard({ onNavigate, onLogout }) {
   const [toast, setToast] = useState('');
   const [detailProduct, setDetailProduct] = useState(null);
   const [cartOpen, setCartOpen] = useState(false);
+  const [cartNudge, setCartNudge] = useState(null);
   const [checkout, setCheckout] = useState(null); // { items, source: 'cart' | 'buy' }
   const [view, setView] = useState('shop'); // 'shop' | 'orders'
   const pendingScroll = useRef(null);
+  const cartNudgeTimer = useRef(null);
 
   const featuredProduct = products.find((product) => product.featured) || products[0];
 
@@ -638,6 +679,8 @@ export default function Dashboard({ onNavigate, onLogout }) {
     const timer = setTimeout(() => setToast(''), 4000);
     return () => clearTimeout(timer);
   }, [toast]);
+
+  useEffect(() => () => window.clearTimeout(cartNudgeTimer.current), []);
 
   /* Highlight the nav item for the shop section currently in view */
   useEffect(() => {
@@ -683,9 +726,20 @@ export default function Dashboard({ onNavigate, onLogout }) {
     document.getElementById(`dashboard-${id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
-  const updateCart = useCallback((product, delta) => {
+  const updateCart = useCallback((product, delta, event) => {
     setCart((current) => ({ ...current, [product.id]: Math.max(0, (current[product.id] || 0) + delta) }));
-    if (delta > 0) setToast(`${product.name} added to your cart.`);
+    if (delta > 0 && Number.isFinite(event?.clientX) && Number.isFinite(event?.clientY)) {
+      const width = 144;
+      const height = 48;
+      setCartNudge({
+        left: Math.max(12, Math.min(event.clientX + 14, window.innerWidth - width - 12)),
+        top: Math.max(12, Math.min(event.clientY + 14, window.innerHeight - height - 12)),
+      });
+      window.clearTimeout(cartNudgeTimer.current);
+      cartNudgeTimer.current = window.setTimeout(() => setCartNudge(null), 4500);
+    } else if (delta > 0) {
+      setToast(`${product.name} added to your cart.`);
+    }
   }, []);
 
   const buyNow = (product) => {
@@ -885,7 +939,7 @@ export default function Dashboard({ onNavigate, onLogout }) {
                   <span className="rounded-full bg-[#F8F5F0] px-3 py-1 text-[11px] font-semibold text-[#6F5B55]">{featuredProduct.category}</span>
                 </div>
                 <div className="flex flex-wrap gap-3">
-                  <button type="button" onClick={() => updateCart(featuredProduct, 1)} className="inline-flex items-center gap-2 rounded-xl bg-[#8D493A] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#71392E]"><Plus size={16} /> Add to cart</button>
+                  <button type="button" onClick={(event) => updateCart(featuredProduct, 1, event)} className="inline-flex items-center gap-2 rounded-xl bg-[#8D493A] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#71392E]"><Plus size={16} /> Add to cart</button>
                   <button type="button" onClick={() => buyNow(featuredProduct)} className="rounded-xl border border-[#874638] px-5 py-3 text-sm font-bold text-[#874638] transition hover:bg-[#F8F1EB]">Buy now</button>
                   <button type="button" onClick={() => setDetailProduct(featuredProduct)} className="rounded-xl px-4 py-3 text-sm font-bold text-[#6F5B55] underline decoration-[#DCC9B9] underline-offset-4">Our story</button>
                 </div>
@@ -1009,6 +1063,9 @@ export default function Dashboard({ onNavigate, onLogout }) {
                     <h3 className="m-0 text-xl font-bold">{businessPlan.idea} · {businessPlan.location}</h3>
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
+                    <button type="button" onClick={() => { if (!printBusinessPlan(businessPlan)) setToast('Allow pop-ups to download your plan as a PDF.'); }} className="inline-flex items-center gap-2 rounded-full border border-[#DCC9B9] bg-white px-3 py-2 text-[11px] font-bold text-[#874638] transition hover:bg-[#F8F5F0]">
+                      <Download size={14} /> Download PDF
+                    </button>
                     {businessPlan.demo && <span className="rounded-full border border-[#D8E3D2] bg-[#F2F6EF] px-3 py-1 text-[11px] font-bold text-[#456040]">Demo plan · sample data</span>}
                     <span className="rounded-full bg-white px-3 py-1 text-[11px] font-semibold text-[#6F5B55]">Created {formatDate(businessPlan.generatedAt)}</span>
                   </div>
@@ -1093,6 +1150,18 @@ export default function Dashboard({ onNavigate, onLogout }) {
         </div>
       )}
 
+      {cartNudge && (
+        <button
+          type="button"
+          onClick={() => { setCartOpen(true); setCartNudge(null); }}
+          style={{ left: cartNudge.left, top: cartNudge.top }}
+          className="fixed z-[65] inline-flex h-12 items-center gap-2 rounded-full border border-[#EADBC8] bg-[#FDFBF7] px-4 text-xs font-bold text-[#8D493A] shadow-xl transition hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8D493A]"
+          aria-label={`View cart, ${cartCount} items`}
+        >
+          <ShoppingBag size={16} /> View cart <span className="grid h-5 min-w-5 place-items-center rounded-full bg-[#8D493A] px-1 text-[10px] text-white">{cartCount}</span>
+        </button>
+      )}
+
       {/* Overlays */}
       {cartOpen && (
         <CartDrawer
@@ -1114,7 +1183,7 @@ export default function Dashboard({ onNavigate, onLogout }) {
       {detailProduct && (
         <ProductDetail
           product={detailProduct}
-          onAdd={() => { updateCart(detailProduct, 1); setDetailProduct(null); }}
+          onAdd={(event) => { updateCart(detailProduct, 1, event); setDetailProduct(null); }}
           onClose={() => setDetailProduct(null)}
         />
       )}
