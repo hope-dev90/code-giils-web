@@ -25,7 +25,7 @@ function openMail() {
 
 export default function ContactPage({ onHome, onAbout, onNatural, onWater, onStats, onContact, onLogout, onSanctuary }: Props) {
   return (
-    <ImagePage image="/contact-us.png" iw={IW} ih={IH}>
+    <ImagePage image="/contact-us.webp" iw={IW} ih={IH}>
       <Hotspot def={B_HOME}          onClick={onHome}    label="Home" />
       <Hotspot def={NAV_1024.about}  onClick={onAbout}   label="About Us" />
       <Hotspot def={NAV_1024.natural}onClick={onNatural} label="Natural Resources" />

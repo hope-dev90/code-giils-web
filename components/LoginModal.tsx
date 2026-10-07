@@ -51,7 +51,7 @@ export function LoginModal({ onSuccess, onClose, onAbout, onNatural, onWater, on
 
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 200 }}>
-      <ImagePage image="/login-page.png" iw={IW} ih={IH}>
+      <ImagePage image="/login-page.webp" iw={IW} ih={IH}>
         {/* Username field */}
         <InputOverlay def={F_USER} value={username} onChange={setUsername}
           placeholder="Username" type="text" onEnter={doLogin} />

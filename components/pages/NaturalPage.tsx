@@ -194,7 +194,7 @@ export default function NaturalPage({ onHome, onAbout, onNatural, onWater, onSta
   const [popup, setPopup] = useState<string | null>(null);
 
   return (
-    <ImagePage image="/natural-resources.png" iw={IW} ih={IH}>
+    <ImagePage image="/natural-resources.webp" iw={IW} ih={IH}>
       {/* Nav */}
       <Hotspot def={NAV_1024.about}   onClick={onAbout}   label="About Us" />
       <Hotspot def={NAV_1024.natural} onClick={onNatural} label="Natural Resources" />

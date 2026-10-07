@@ -10,7 +10,7 @@ interface Props {
 
 export default function AboutPage(props: Props) {
   return (
-    <ImagePage image="/about-us.png" iw={1536} ih={698}>
+    <ImagePage image="/about-us.webp" iw={1536} ih={698}>
       <NavHotspots698 nav={NAV_698} {...props} />
     </ImagePage>
   );

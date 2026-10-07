@@ -78,7 +78,7 @@ export default function ShowcasePage({
 
   return (
     <div onMouseMove={handleMouseMove}>
-      <ImagePage image="/showcase.png" iw={IW} ih={IH}>
+      <ImagePage image="/showcase.webp" iw={IW} ih={IH}>
         {/* Product showcase hotspots with hover functionality */}
         {PRODUCTS.map((product, index) => (
           <div

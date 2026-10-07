@@ -45,7 +45,7 @@ export default function SanctuaryPage({ onHome, onAbout, onNatural, onWater, onS
 
   return (
     <>
-      <ImagePage image="/sanctury.png" iw={IW} ih={IH}>
+      <ImagePage image="/sanctury.webp" iw={IW} ih={IH}>
         {/* Navbar */}
         <Hotspot def={NAV.home}     onClick={onHome}      label="Home" />
         <Hotspot def={NAV.about}    onClick={onAbout}     label="About Us" />

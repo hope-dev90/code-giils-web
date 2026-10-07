@@ -96,7 +96,7 @@ export default function HomePage({ onAbout, onNatural, onWater, onStats, onConta
 
   return (
     <>
-      <ImagePage image="/landingscreen.png" iw={IW} ih={IH}>
+      <ImagePage image="/landingscreen.webp" iw={IW} ih={IH}>
         {/* Nav */}
         <Hotspot def={T_ABOUT}   onClick={onAbout}   label="About Us" />
         <Hotspot def={T_NATURAL} onClick={onNatural} label="Natural Resources" />
@@ -188,7 +188,7 @@ function LoginSuccessScreen({ onOk }: { onOk: () => void }) {
   const okDef: HotspotDef = [430 / IW2, 590 / IH2, 460 / IW2, 90 / IH2];
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 300 }}>
-      <ImagePage image="/login-success.png" iw={IW2} ih={IH2}>
+        <ImagePage image="/login-success.webp" iw={IW2} ih={IH2}>
         <Hotspot def={okDef} onClick={onOk} label="OK" />
       </ImagePage>
     </div>
@@ -202,7 +202,7 @@ function SignUpSuccessScreen({ onOk }: { onOk: () => void }) {
       onClick={onOk}
       style={{ position: "fixed", inset: 0, zIndex: 300, cursor: "pointer" }}
     >
-      <ImagePage image="/success-message.png" iw={1386} ih={778}>
+      <ImagePage image="/success-message.webp" iw={1386} ih={778}>
         {/* entire surface is clickable via the outer div */}
       </ImagePage>
     </div>
@@ -224,7 +224,7 @@ function AdminLoginModal({ onClose }: { onClose: () => void }) {
   if (success) {
     return (
       <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 300, cursor: "pointer" }}>
-        <ImagePage image="/success-message.png" iw={1386} ih={778} />
+        <ImagePage image="/success-message.webp" iw={1386} ih={778} />
       </div>
     );
   }

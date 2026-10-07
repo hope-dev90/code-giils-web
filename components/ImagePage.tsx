@@ -73,6 +73,8 @@ export function ImagePage({ image, iw, ih, children, style }: ImagePageProps) {
         src={image}
         alt=""
         draggable={false}
+        fetchPriority="high"
+        decoding="async"
         style={{
           position: "absolute",
           left: rect.left,
