@@ -8,8 +8,8 @@ const IW = 1847, IH = 851;
 const h = (x: number, y: number, w: number, ht: number): HotspotDef =>
   [x / IW, y / IH, w / IW, ht / IH];
 
-const F_USER:  HotspotDef = h(200, 485, 440, 55);
-const F_PASS:  HotspotDef = h(200, 563, 440, 55);
+const F_USER:  HotspotDef = h(253, 480, 379, 63);
+const F_PASS:  HotspotDef = h(253, 562, 379, 63);
 const B_LOGIN: HotspotDef = h(280, 648, 345, 44);
 
 // Nav tiles (same grid)
@@ -127,7 +127,7 @@ function InputOverlay({ def, value, onChange, placeholder, type, onEnter }: {
           width: `${w * 100}%`, height: `${h * 100}%`,
           background: "transparent", border: "none", outline: "none",
           fontFamily: "sans-serif", fontWeight: 700, fontSize: "clamp(12px,1.4vw,20px)",
-          color: "#2A1A04", paddingLeft: "3.5%", paddingRight: "1%",
+          color: "#2A1A04", paddingLeft: "18%", paddingRight: "1%",
           caretColor: "#2A1A04", zIndex: 10,
         }}
       />

@@ -6,7 +6,7 @@ import { LoginModal } from "@/components/LoginModal";
 import { userExists, signUp, login } from "@/lib/userStore";
 import type { HotspotDef } from "@/lib/types";
 
-const IW = 1847, IH = 851;
+const IW = 1843, IH = 853;
 const h = (x: number, y: number, w: number, ht: number): HotspotDef =>
   [x / IW, y / IH, w / IW, ht / IH];
 
@@ -18,9 +18,9 @@ const T_STATS   = h(994,  235, 193, 124);
 const T_CONTACT = h(1197, 235, 193, 124);
 
 // Form fields
-const F_USER    = h(470,  530, 400,  56);
-const F_PASS    = h(820,  530, 400,  56);
-const F_CONF    = h(1170, 530, 400,  56);
+const F_USER    = h(419, 537, 321, 57);
+const F_PASS    = h(763, 537, 318, 57);
+const F_CONF    = h(1103, 537, 322, 57);
 
 // Buttons
 const B_SIGNUP  = h(422,  622, 314,  60);
