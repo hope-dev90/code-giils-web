@@ -42,10 +42,12 @@ function InputOverlay({ def, value, onChange, placeholder, type }: {
   const [x, y, w, hh] = def;
   return (
     <input
+      className="home-overlay-input"
       type={type || "text"}
       value={value}
       onChange={e => onChange(e.target.value)}
       placeholder={placeholder}
+      autoComplete="off"
       style={{
         position: "absolute",
         left: `${x * 100}%`, top: `${y * 100}%`,
