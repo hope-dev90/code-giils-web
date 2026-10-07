@@ -177,6 +177,7 @@ export default async function businessPlan(req, res) {
       body: JSON.stringify({
         contents: [{ role: 'user', parts: [{ text: prompt }] }],
         generationConfig: {
+          thinkingConfig: { thinkingLevel: 'low' },
           responseFormat: { text: { mimeType: 'APPLICATION_JSON', schema: planSchema } },
           maxOutputTokens: 1800,
           temperature: 0.5,

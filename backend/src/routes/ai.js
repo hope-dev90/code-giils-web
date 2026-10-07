@@ -148,6 +148,7 @@ router.post('/business-plan', requireAuth, async (req, res) => {
       body: JSON.stringify({
         contents: [{ role: 'user', parts: [{ text: prompt }] }],
         generationConfig: {
+          thinkingConfig: { thinkingLevel: 'low' },
           responseFormat: {
             text: {
               mimeType: 'APPLICATION_JSON',
