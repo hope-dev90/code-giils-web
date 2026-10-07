@@ -11,9 +11,9 @@ import { apiJson, vercelApiJson } from '../../config/api';
 import { STORY_LIBRARY, getRewardStory } from '../../data/stories';
 import { localizeStory } from '../../utils/storyLocalization';
 import StoryArticle from '../landing/StoryArticle';
-import braceletImage from '../../assets/bracelet.png';
+import braceletImage from '../../assets/bracelet.webp';
 import penImage from '../../assets/pen.png';
-import shirtImage from '../../assets/t-shirt.png';
+import shirtImage from '../../assets/t-shirt.webp';
 import heroImage from '../../assets/rwanda.jpg';
 import sisalImage from '../../assets/sisal.png';
 import bananaLeavesImage from '../../assets/banana leaves.png';
@@ -341,7 +341,7 @@ function ProductCard({ product, quantity, onAdd, onBuyNow, onViewDetails }) {
   return (
     <article className="group overflow-hidden rounded-3xl border border-[#EADBC8] bg-white shadow-[0_8px_28px_rgba(80,49,20,0.05)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_18px_40px_rgba(80,49,20,0.12)]">
       <div className="relative flex h-64 items-center justify-center overflow-hidden bg-[#F5EEE5] p-6 sm:h-72">
-        <img src={product.image} alt={product.name} className="h-full w-full object-contain transition duration-500 group-hover:scale-105" />
+        <img src={product.image} alt={product.name} loading="lazy" decoding="async" className="h-full w-full object-contain transition duration-500 group-hover:scale-105" />
         <span className="absolute left-4 top-4 rounded-full border border-white/80 bg-white/95 px-3 py-1.5 text-[11px] font-bold text-[#874638]">{product.category}</span>
       </div>
       <div className="p-5 sm:p-6">
@@ -379,7 +379,7 @@ function MaterialCard({ material, selected, expanded, onExpand, onToggle }) {
       <button type="button" onClick={onExpand} aria-expanded={expanded} className={`w-full text-left hover:bg-[#FDFBF7] ${selected ? 'p-6 sm:p-8' : 'p-5'}`}>
         <div className="mb-4 flex items-start justify-between gap-3">
           <span className={`grid shrink-0 place-items-center overflow-hidden rounded-xl bg-[#F5EEE5] text-[#8D493A] ${selected ? 'size-20' : 'size-14'}`}>
-            {material.image ? <img src={material.image} alt="" className="h-full w-full object-cover" /> : <Icon size={selected ? 30 : 22} />}
+            {material.image ? <img src={material.image} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" /> : <Icon size={selected ? 30 : 22} />}
           </span>
           <span className="rounded-full bg-[#F8F5F0] px-3 py-1 text-[11px] font-bold text-[#6F5B55]">{material.type}</span>
         </div>
@@ -422,7 +422,7 @@ function CartDrawer({ items, total, onChange, onCheckout, onClose }) {
           <ul className="m-0 list-none space-y-4 p-0">
             {items.map((item) => (
               <li key={item.id} className="flex items-center gap-4 rounded-2xl border border-[#EADBC8] bg-white p-3">
-                <img src={item.image} alt="" className="h-16 w-16 rounded-xl bg-[#F5EEE5] object-contain p-1" />
+                <img src={item.image} alt="" loading="lazy" decoding="async" className="h-16 w-16 rounded-xl bg-[#F5EEE5] object-contain p-1" />
                 <div className="min-w-0 flex-1">
                   <p className="m-0 truncate text-sm font-bold">{item.name}</p>
                   <p className="mb-2 mt-0.5 text-xs text-[#6F5B55]">{formatRwf(item.price)}</p>
@@ -622,7 +622,7 @@ function ProductDetail({ product, onAdd, onClose }) {
     <Modal label={product.name} onClose={onClose}>
       <div className="grid sm:grid-cols-2">
         <div className="flex min-h-64 items-center justify-center bg-[#F5EEE5] p-8">
-          <img src={product.image} alt={product.name} className="h-56 w-full object-contain" />
+          <img src={product.image} alt={product.name} loading="lazy" decoding="async" className="h-56 w-full object-contain" />
         </div>
         <div className="flex flex-col justify-center p-6 sm:p-8">
           <span className="mb-3 w-fit rounded-full bg-[#F3E7DE] px-3 py-1 text-[11px] font-bold text-[#874638]">{product.category}</span>
@@ -927,7 +927,7 @@ export default function Dashboard({ onNavigate, onLogout }) {
             {/* Featured product */}
             <article className="mb-10 grid overflow-hidden rounded-[2rem] border border-[#EADBC8] bg-white shadow-[0_14px_44px_rgba(80,49,20,0.08)] lg:grid-cols-[1.1fr_0.9fr]">
               <div className="relative flex min-h-72 items-center justify-center bg-[#F5EEE5] p-8 sm:min-h-96 sm:p-12">
-                <img src={featuredProduct.image} alt={featuredProduct.name} className="h-64 w-full object-contain sm:h-80" />
+                <img src={featuredProduct.image} alt={featuredProduct.name} fetchPriority="high" decoding="async" className="h-64 w-full object-contain sm:h-80" />
                 <span className="absolute left-5 top-5 rounded-full bg-[#874638] px-4 py-2 text-[11px] font-bold text-white">Featured</span>
               </div>
               <div className="flex flex-col justify-center p-6 sm:p-9 lg:p-12">

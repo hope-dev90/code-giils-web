@@ -10,7 +10,7 @@ export default function StoryArticle({ story: sourceStory, language = 'en', rewa
   return (
     <article className="mx-auto w-full overflow-hidden border border-[#EADBC8]/70 bg-white shadow-[0_12px_40px_rgba(68,38,23,0.08)] sm:rounded-sm">
       <header className={`group relative w-full overflow-hidden bg-[#30221E] ${compact ? 'h-44 sm:h-56' : 'h-64 sm:h-80 md:h-96'}`}>
-        {story.image && <img src={story.image} alt="" className="absolute inset-0 h-full w-full object-cover opacity-80" />}
+        {story.image && <img src={story.image} alt="" loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-cover opacity-80" />}
         <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-black/5" />
         <div className="absolute inset-x-5 bottom-5 z-10 text-white sm:inset-x-10 sm:bottom-7">
           <p className="mb-2 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[.16em] text-white/80"><BookOpen size={13} /> Umuco story</p>

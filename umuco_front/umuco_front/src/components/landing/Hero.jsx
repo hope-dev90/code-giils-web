@@ -3,7 +3,7 @@ import { ArrowRight, Compass, BookOpen, Users, Flag, BarChart3, Package } from '
 import { useLanguage } from '../../contexts/Language';
 
 import cardImg1 from '../../assets/tradi.jpg';
-import cardImg2 from '../../assets/book.png';
+import cardImg2 from '../../assets/book.webp';
 import cardImg3 from '../../assets/iraba.jpg';
 
 function ImigongoPattern({ id, color, className = '', style }) {
@@ -212,6 +212,9 @@ function Hero({ onNavigate }) {
                       <img
                         src={item.img}
                         alt={item.title}
+                        loading={isFront ? 'eager' : 'lazy'}
+                        fetchPriority={isFront ? 'high' : 'auto'}
+                        decoding="async"
                         className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                       />
 

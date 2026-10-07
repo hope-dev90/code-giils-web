@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import { Quote, FilePlus, ShieldAlert } from 'lucide-react';
 import { useLanguage } from '../../contexts/Language';
-import joinImg from '../../assets/tra.png'; 
+import joinImg from '../../assets/tra.webp'; 
 
 function CommunityGuardian({onNavigate}) {
   const {t} = useLanguage();
@@ -59,6 +59,8 @@ function CommunityGuardian({onNavigate}) {
             <img 
               src={joinImg} 
               alt="Rwandan Audio Archive Workstation Studio" 
+              loading="lazy"
+              decoding="async"
               className="absolute inset-0 w-full h-full object-cover object-center"
             />
             <div className="absolute inset-0 bg-[#3E2319]/10 blend-multiply" />

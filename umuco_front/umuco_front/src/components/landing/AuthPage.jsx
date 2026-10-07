@@ -4,7 +4,7 @@ import {
   Swords, Trees, Crown, BookOpen, Music,
 } from 'lucide-react';
 import GoogleOAuthButton from './GoogleOAuthButton';
-import authLeftBg from '../../assets/tra.png';
+import authLeftBg from '../../assets/tra.webp';
 import authLeftBg2 from '../../assets/tradi.jpg';
 import authLeftBg3 from '../../assets/rda.jpg';
 import TribalLogo from '../../assets/Logo';
