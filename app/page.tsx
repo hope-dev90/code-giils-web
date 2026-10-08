@@ -35,7 +35,7 @@ export default function App() {
     case "natural":  content = <NaturalPage {...nav} />; break;
     case "contact":  content = <ContactPage {...nav} />; break;
     case "water":
-      content = <DummyPage image="/water-resources.webp" iw={1536} ih={698} title="Water Resources" {...nav} />;
+      content = <DummyPage image="/water-resources.webp" iw={1536} ih={1024} title="Water Resources" {...nav} />;
       break;
     case "stats":
       content = <DummyPage image="/product-stats.webp" iw={1536} ih={698} title="Product Stats" {...nav} />;
