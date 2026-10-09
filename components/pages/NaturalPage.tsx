@@ -28,7 +28,7 @@ const SLIDES = [
   { src: "/keys.png",     caption: "Logo Keychain" },
 ];
 
-// Slideshow positioned center of page
+// Slideshow: center of image, responsive via vw clamping in the component itself
 const SLIDE_DEF: HotspotDef = [(768 - 240) / IW, (512 - 180) / IH, 480 / IW, 360 / IH];
 
 interface Props {
@@ -91,8 +91,10 @@ function Slideshow() {
           onMouseLeave={() => setHoverReopen(false)}
           style={{
             background: "rgba(20,12,5,0.85)", border: `1.5px solid ${hoverReopen ? "#FFD080" : "#C8A06A"}`,
-            borderRadius: 16, padding: "8px 20px", color: hoverReopen ? "#FFD080" : "#fff",
-            fontFamily: "sans-serif", fontWeight: 700, fontSize: 13, cursor: "pointer",
+            borderRadius: "clamp(10px,2vw,16px)", padding: "clamp(6px,1vw,8px) clamp(12px,2vw,20px)",
+            color: hoverReopen ? "#FFD080" : "#fff",
+            fontFamily: "sans-serif", fontWeight: 700, fontSize: "clamp(10px,1.2vw,13px)",
+            cursor: "pointer", minHeight: 36,
           }}
         >▶&nbsp; Show Slideshow</button>
       </div>
@@ -103,8 +105,9 @@ function Slideshow() {
     <div style={{
       position: "absolute",
       left: `${SLIDE_DEF[0] * 100}%`, top: `${SLIDE_DEF[1] * 100}%`,
-      width: `${SLIDE_DEF[2] * 100}%`, height: `${SLIDE_DEF[3] * 100}%`,
-      background: "rgba(20,12,5,0.87)", borderRadius: 18,
+      width: `max(${SLIDE_DEF[2] * 100}%, min(38vw, 320px))`,
+      height: `max(${SLIDE_DEF[3] * 100}%, min(28vw, 240px))`,
+      background: "rgba(20,12,5,0.87)", borderRadius: "clamp(10px,2vw,18px)",
       border: "1.8px solid #C8A06A", overflow: "hidden",
     }}>
       {/* Header */}

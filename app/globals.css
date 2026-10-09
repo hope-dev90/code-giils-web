@@ -1,7 +1,29 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }
+
+html, body {
+  width: 100%;
+  min-height: 100%;
+  min-height: 100dvh;
+  overflow: hidden;
+  background: #000;
+  /* prevent iOS rubber-band scroll */
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Prevent double-tap zoom on buttons/inputs on iOS */
+button, input, textarea, select {
+  touch-action: manipulation;
+}
+
 button { cursor: pointer; border: none; background: none; padding: 0; }
 input, textarea { font-family: inherit; }
+button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
+  outline: 3px solid #f6c35f;
+  outline-offset: 2px;
+}
+
+/* ── Home page transparent input overlay ── */
 .home-overlay-input,
 .home-overlay-input:hover,
 .home-overlay-input:focus,
@@ -18,4 +40,40 @@ input, textarea { font-family: inherit; }
   caret-color: #2A1A04;
   transition: background-color 999999s ease-out 0s;
 }
+
 a { color: inherit; text-decoration: none; }
+
+/* ── Responsive popup / modal helpers ── */
+.popup-card {
+  width: min(var(--popup-width, 440px), 92vw);
+  background: #FAF0DC;
+  border-radius: clamp(14px, 3vw, 22px);
+  border: 2.5px solid #8B5E2F;
+  padding: clamp(16px, 4vw, 28px) clamp(14px, 4vw, 36px) clamp(14px, 3vw, 22px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(8px, 1.5vw, 10px);
+}
+
+.popup-card p {
+  text-align: center;
+  line-height: 1.55;
+}
+
+/* ── Shake animation for login error ── */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%       { transform: translateX(-6px); }
+  40%       { transform: translateX(6px); }
+  60%       { transform: translateX(-4px); }
+  80%       { transform: translateX(4px); }
+}
+
+/* ── Floating button responsive ── */
+@media (max-width: 640px) {
+  .floating-btn { width: 92px !important; right: max(12px, env(safe-area-inset-right)) !important; top: max(12px, env(safe-area-inset-top)) !important; }
+}
+@media (min-width: 641px) and (max-width: 1024px) {
+  .floating-btn { width: 210px !important; right: 16px !important; top: 70px !important; }
+}

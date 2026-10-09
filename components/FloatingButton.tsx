@@ -3,7 +3,6 @@ import React, { useState } from "react";
 
 interface Props {
   onClick?: () => void;
-  href?: string;
 }
 
 export default function FloatingButton({ onClick }: Props) {
@@ -11,16 +10,17 @@ export default function FloatingButton({ onClick }: Props) {
 
   return (
     <button
+      className="floating-btn"
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
       onClick={onClick}
-      aria-label="Floating Action Button"
+      aria-label="Open Sanctuary Kit"
       style={{
         position: "fixed",
         right: 24,
-        top: 120, // Lowered from 24 to 120 for better user accessibility
+        top: 120,
         zIndex: 500,
-        width: 320, // Increased from 250 to 320 for even bigger size
+        width: "clamp(100px, 18vw, 320px)",
         height: "auto",
         cursor: "pointer",
         border: "none",
@@ -36,7 +36,7 @@ export default function FloatingButton({ onClick }: Props) {
     >
       <img
         src="/button.png"
-        alt="Action Button"
+        alt="Sanctuary Kit"
         draggable={false}
         style={{
           width: "100%",
@@ -48,9 +48,11 @@ export default function FloatingButton({ onClick }: Props) {
       />
       <style>{`
         @keyframes floaty {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-6px); }
+          0%, 100% { transform: translateY(0px); }
+          50%       { transform: translateY(-6px); }
         }
+        /* keep the hover scale working alongside floaty */
+        .floating-btn:hover { animation-play-state: paused; }
       `}</style>
     </button>
   );

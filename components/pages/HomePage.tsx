@@ -18,16 +18,16 @@ const T_STATS   = h(994,  235, 193, 124);
 const T_CONTACT = h(1197, 235, 193, 124);
 
 // Form fields
-const F_USER    = h(419, 537, 321, 57);
-const F_PASS    = h(763, 537, 318, 57);
-const F_CONF    = h(1103, 537, 322, 57);
+const F_USER = h(419, 537, 321, 57);
+const F_PASS = h(763, 537, 318, 57);
+const F_CONF = h(1103, 537, 322, 57);
 
 // Buttons
-const B_SIGNUP  = h(422,  622, 314,  60);
-const B_LOGIN   = h(740,  621, 359,  78);
-const B_ADMIN   = h(1107, 621, 316,  59);
-const B_TERMS   = h(560,  775, 360,  55);
-const B_FORGOT  = h(930,  775, 350,  55);
+const B_SIGNUP = h(422,  622, 314,  60);
+const B_LOGIN  = h(740,  621, 359,  78);
+const B_ADMIN  = h(1107, 621, 316,  59);
+const B_TERMS  = h(560,  775, 360,  55);
+const B_FORGOT = h(930,  775, 350,  55);
 
 interface Props {
   onHome: () => void; onAbout: () => void; onNatural: () => void;
@@ -50,13 +50,24 @@ function InputOverlay({ def, value, onChange, placeholder, type }: {
       autoComplete="off"
       style={{
         position: "absolute",
-        left: `${x * 100}%`, top: `${y * 100}%`,
-        width: `${w * 100}%`, height: `${hh * 100}%`,
-        background: "transparent", border: "none", outline: "none",
-        fontFamily: "sans-serif", fontWeight: 600,
-        fontSize: "clamp(11px, 1.2vw, 18px)",
-        color: "#2A1A04", paddingLeft: "2%",
-        caretColor: "#2A1A04", zIndex: 10,
+        left: `${x * 100}%`,
+        top: `${y * 100}%`,
+        width: `${w * 100}%`,
+        height: `${hh * 100}%`,
+        background: "transparent",
+        border: "none",
+        outline: "none",
+        fontFamily: "sans-serif",
+        fontWeight: 600,
+        /* clamp: readable on tiny phones, comfortable on desktop */
+        fontSize: "clamp(10px, 1.5vw, 18px)",
+        color: "#2A1A04",
+        paddingLeft: "2%",
+        paddingRight: "1%",
+        caretColor: "#2A1A04",
+        zIndex: 10,
+        /* Enlarge tap area vertically without affecting layout */
+        touchAction: "manipulation",
       }}
     />
   );
@@ -67,14 +78,13 @@ export default function HomePage({ onAbout, onNatural, onWater, onStats, onConta
   const [password, setPassword] = useState("");
   const [confirm,  setConfirm]  = useState("");
 
-  const [showLogin, setShowLogin]   = useState(false);
-  const [showAdmin, setShowAdmin]   = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false);
+  const [showLogin,        setShowLogin]        = useState(false);
+  const [showAdmin,        setShowAdmin]        = useState(false);
+  const [showSuccess,      setShowSuccess]      = useState(false);
   const [showLoginSuccess, setShowLoginSuccess] = useState(false);
-  const [showTerms, setShowTerms]   = useState(false);
-  const [showForgot, setShowForgot] = useState(false);
-  const [infoMsg, setInfoMsg]       = useState<string | null>(null);
-  const [statusMsg, setStatusMsg]   = useState<{ text: string; ok: boolean } | null>(null);
+  const [showTerms,        setShowTerms]        = useState(false);
+  const [showForgot,       setShowForgot]       = useState(false);
+  const [statusMsg,        setStatusMsg]        = useState<{ text: string; ok: boolean } | null>(null);
   const statusTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   function showStatus(text: string, ok: boolean) {
@@ -85,10 +95,10 @@ export default function HomePage({ onAbout, onNatural, onWater, onStats, onConta
 
   function doSignUp() {
     const u = username.trim();
-    if (u.length < 3)        { showStatus("✗  Username must be at least 3 characters.", false); return; }
-    if (password.length < 4) { showStatus("✗  Password must be at least 4 characters.", false); return; }
-    if (password !== confirm) { showStatus("✗  Passwords do not match.", false); return; }
-    if (userExists(u))        { showStatus("✗  Username already taken.", false); return; }
+    if (u.length < 3)         { showStatus("✗  Username must be at least 3 characters.", false); return; }
+    if (password.length < 4)  { showStatus("✗  Password must be at least 4 characters.", false); return; }
+    if (password !== confirm)  { showStatus("✗  Passwords do not match.", false); return; }
+    if (userExists(u))         { showStatus("✗  Username already taken.", false); return; }
     signUp(u, password);
     setShowSuccess(true);
     setUsername(""); setPassword(""); setConfirm("");
@@ -106,24 +116,26 @@ export default function HomePage({ onAbout, onNatural, onWater, onStats, onConta
 
         {/* Form inputs */}
         <InputOverlay def={F_USER} value={username} onChange={setUsername} placeholder="Username" />
-        <InputOverlay def={F_PASS} value={password} onChange={setPassword} placeholder="Password" type="password" />
+        <InputOverlay def={F_PASS} value={password} onChange={setPassword} placeholder="Password"         type="password" />
         <InputOverlay def={F_CONF} value={confirm}  onChange={setConfirm}  placeholder="Confirm password" type="password" />
 
         {/* Action buttons */}
-        <Hotspot def={B_SIGNUP} onClick={doSignUp}              label="Sign Up" />
-        <Hotspot def={B_LOGIN}  onClick={() => setShowLogin(true)} label="User Login" />
-        <Hotspot def={B_ADMIN}  onClick={() => setShowAdmin(true)} label="Admin Login" />
-        <Hotspot def={B_TERMS}  onClick={() => setShowTerms(true)} label="Terms" />
+        <Hotspot def={B_SIGNUP} onClick={doSignUp}                  label="Sign Up" />
+        <Hotspot def={B_LOGIN}  onClick={() => setShowLogin(true)}  label="User Login" />
+        <Hotspot def={B_ADMIN}  onClick={() => setShowAdmin(true)}  label="Admin Login" />
+        <Hotspot def={B_TERMS}  onClick={() => setShowTerms(true)}  label="Terms" />
         <Hotspot def={B_FORGOT} onClick={() => setShowForgot(true)} label="Forgot Password" />
 
         {/* Status label */}
         {statusMsg && (
           <div style={{
             position: "absolute",
-            left: `${(380 / IW) * 100}%`, top: `${(710 / IH) * 100}%`,
+            left: `${(380 / IW) * 100}%`,
+            top: `${(710 / IH) * 100}%`,
             width: `${(1080 / IW) * 100}%`,
-            fontFamily: "sans-serif", fontWeight: 700,
-            fontSize: "clamp(10px,1.1vw,15px)",
+            fontFamily: "sans-serif",
+            fontWeight: 700,
+            fontSize: "clamp(9px, 1.1vw, 15px)",
             color: statusMsg.ok ? "#2E7D32" : "#B00020",
             pointerEvents: "none",
           }}>{statusMsg.text}</div>
@@ -136,26 +148,28 @@ export default function HomePage({ onAbout, onNatural, onWater, onStats, onConta
           onClose={() => setShowLogin(false)}
           onSuccess={() => { setShowLogin(false); setShowLoginSuccess(true); }}
           onAbout={onAbout} onNatural={onNatural} onWater={onWater}
-          onStats={onStats} onContact={onContact} onSanctuary={onSanctuary} 
+          onStats={onStats} onContact={onContact} onSanctuary={onSanctuary}
           onShowcase={onShowcase} onLogout={() => setShowLogin(false)}
         />
       )}
 
-      {/* Login success screen */}
-      {showLoginSuccess && <LoginSuccessScreen onOk={() => { setShowLoginSuccess(false); onAbout(); }} />}
+      {showLoginSuccess && (
+        <LoginSuccessScreen onOk={() => { setShowLoginSuccess(false); onAbout(); }} />
+      )}
 
-      {/* Sign-up success */}
-      {showSuccess && <SignUpSuccessScreen onOk={() => { setShowSuccess(false); setShowLogin(true); }} />}
+      {showSuccess && (
+        <SignUpSuccessScreen onOk={() => { setShowSuccess(false); setShowLogin(true); }} />
+      )}
 
-      {/* Admin login */}
       {showAdmin && <AdminLoginModal onClose={() => setShowAdmin(false)} />}
 
-      {/* Terms */}
       {showTerms && (
         <Modal onClose={() => setShowTerms(false)}>
           <PopupCard width={500}>
-            <p style={{ fontFamily: "serif", fontWeight: 700, fontSize: 18, color: "#3A2005" }}>Terms &amp; Conditions</p>
-            <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "#5A3A10", textAlign: "center", lineHeight: 1.6 }}>
+            <p style={{ fontFamily: "serif", fontWeight: 700, fontSize: "clamp(15px,1.6vw,20px)", color: "#3A2005" }}>
+              Terms &amp; Conditions
+            </p>
+            <p style={{ fontFamily: "sans-serif", fontSize: "clamp(12px,1.2vw,14px)", color: "#5A3A10", lineHeight: 1.6 }}>
               By using Code Hills 1001 you agree to use it responsibly.<br />
               All products are the property of UmucoCore Rwanda.<br />
               Contact us at info@umucocore.rw for any queries.
@@ -165,12 +179,13 @@ export default function HomePage({ onAbout, onNatural, onWater, onStats, onConta
         </Modal>
       )}
 
-      {/* Forgot password */}
       {showForgot && (
         <Modal onClose={() => setShowForgot(false)}>
           <PopupCard width={420}>
-            <p style={{ fontFamily: "serif", fontWeight: 700, fontSize: 17, color: "#3A2005" }}>Forgot Password</p>
-            <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "#5A3A10", textAlign: "center" }}>
+            <p style={{ fontFamily: "serif", fontWeight: 700, fontSize: "clamp(14px,1.5vw,18px)", color: "#3A2005" }}>
+              Forgot Password
+            </p>
+            <p style={{ fontFamily: "sans-serif", fontSize: "clamp(12px,1.2vw,14px)", color: "#5A3A10", textAlign: "center" }}>
               Please contact the administrator at<br />
               <strong>info@umucocore.rw</strong>
             </p>
@@ -182,34 +197,29 @@ export default function HomePage({ onAbout, onNatural, onWater, onStats, onConta
   );
 }
 
-/* ── Login success full-screen ─────────────────────────────── */
+/* ── Login success ── */
 function LoginSuccessScreen({ onOk }: { onOk: () => void }) {
   const IW2 = 1320, IH2 = 880;
   const okDef: HotspotDef = [430 / IW2, 590 / IH2, 460 / IW2, 90 / IH2];
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 300 }}>
-        <ImagePage image="/login-success.webp" iw={IW2} ih={IH2}>
+      <ImagePage image="/login-success.webp" iw={IW2} ih={IH2}>
         <Hotspot def={okDef} onClick={onOk} label="OK" />
       </ImagePage>
     </div>
   );
 }
 
-/* ── Sign-up success full-screen ───────────────────────────── */
+/* ── Sign-up success ── */
 function SignUpSuccessScreen({ onOk }: { onOk: () => void }) {
   return (
-    <div
-      onClick={onOk}
-      style={{ position: "fixed", inset: 0, zIndex: 300, cursor: "pointer" }}
-    >
-      <ImagePage image="/success-message.webp" iw={1386} ih={778}>
-        {/* entire surface is clickable via the outer div */}
-      </ImagePage>
+    <div onClick={onOk} style={{ position: "fixed", inset: 0, zIndex: 300, cursor: "pointer" }}>
+      <ImagePage image="/success-message.webp" iw={1386} ih={778} />
     </div>
   );
 }
 
-/* ── Admin login modal ─────────────────────────────────────── */
+/* ── Admin login ── */
 function AdminLoginModal({ onClose }: { onClose: () => void }) {
   const [user, setUser] = useState("");
   const [pass, setPass] = useState("");
@@ -231,22 +241,29 @@ function AdminLoginModal({ onClose }: { onClose: () => void }) {
 
   return (
     <Modal onClose={onClose} closeOnBackdrop>
-      <PopupCard width={360} style={{ gap: 14 }}>
-        <p style={{ fontFamily: "serif", fontWeight: 700, fontSize: 20, color: "#22301F" }}>Overseer Access</p>
-        <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#888" }}>Demo: admin / hills123</p>
+      <PopupCard width={360} style={{ gap: "clamp(10px,1.5vw,14px)" }}>
+        <p style={{ fontFamily: "serif", fontWeight: 700, fontSize: "clamp(16px,1.8vw,22px)", color: "#22301F" }}>
+          Overseer Access
+        </p>
+        <p style={{ fontFamily: "sans-serif", fontSize: "clamp(11px,1vw,13px)", color: "#888" }}>
+          Demo: admin / hills123
+        </p>
         <input value={user} onChange={e => setUser(e.target.value)}
-          placeholder="Username" autoComplete="off"
-          style={inputStyle} />
+          placeholder="Username" autoComplete="off" style={inputStyle} />
         <input value={pass} onChange={e => setPass(e.target.value)}
           placeholder="Password" type="password"
-          onKeyDown={e => e.key === "Enter" && attempt()}
-          style={inputStyle} />
-        {error && <p style={{ color: "#B00020", fontSize: 13, fontFamily: "sans-serif" }}>{error}</p>}
-        <div style={{ display: "flex", gap: 10, marginTop: 4 }}>
+          onKeyDown={e => e.key === "Enter" && attempt()} style={inputStyle} />
+        {error && (
+          <p style={{ color: "#B00020", fontSize: "clamp(11px,1.1vw,13px)", fontFamily: "sans-serif" }}>{error}</p>
+        )}
+        <div style={{ display: "flex", gap: 10, marginTop: 4, flexWrap: "wrap", justifyContent: "center" }}>
           <GreenButton onClick={attempt}>Submit</GreenButton>
           <button onClick={onClose} style={{
-            background: "#B4552E", color: "#fff", border: "none", borderRadius: 14,
-            padding: "8px 20px", fontWeight: 700, fontSize: 13, cursor: "pointer",
+            background: "#B4552E", color: "#fff", border: "none",
+            borderRadius: "clamp(10px,2vw,14px)",
+            padding: "clamp(7px,1.2vw,10px) clamp(14px,2.5vw,20px)",
+            fontWeight: 700, fontSize: "clamp(12px,1.1vw,13px)", cursor: "pointer",
+            minHeight: 40,
           }}>Cancel</button>
         </div>
       </PopupCard>
@@ -255,8 +272,13 @@ function AdminLoginModal({ onClose }: { onClose: () => void }) {
 }
 
 const inputStyle: React.CSSProperties = {
-  width: "100%", padding: "10px 14px",
-  border: "1.5px solid #6E8C5B", borderRadius: 10,
-  fontFamily: "sans-serif", fontSize: 14, background: "#fff",
+  width: "100%",
+  padding: "clamp(8px,1.5vw,10px) clamp(10px,2vw,14px)" as any,
+  border: "1.5px solid #6E8C5B",
+  borderRadius: 10,
+  fontFamily: "sans-serif",
+  fontSize: "clamp(13px,1.3vw,15px)",
+  background: "#fff",
   outline: "none",
+  minHeight: 42,
 };

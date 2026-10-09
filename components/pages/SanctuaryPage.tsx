@@ -71,15 +71,16 @@ export default function SanctuaryPage({ onHome, onAbout, onNatural, onWater, onS
       {popup && (
         <Modal onClose={() => setPopup(null)} closeOnBackdrop>
           <PopupCard width={460} style={{ gap: 14 }}>
-            <p style={{ fontFamily: "serif", fontWeight: 700, fontSize: 22, color: "#2E4A1F" }}>{popup.name}</p>
-            <p style={{ fontFamily: "sans-serif", fontSize: 14, color: "#5A3A10", lineHeight: 1.6, textAlign: "center" }}>
+            <p style={{ fontFamily: "serif", fontWeight: 700, fontSize: "clamp(16px,1.8vw,22px)", color: "#2E4A1F" }}>{popup.name}</p>
+            <p style={{ fontFamily: "sans-serif", fontSize: "clamp(12px,1.2vw,14px)", color: "#5A3A10", lineHeight: 1.6, textAlign: "center" }}>
               {popup.desc}
             </p>
-            <div style={{ display: "flex", gap: 10, justifyContent: "center", marginTop: 6 }}>
+            <div style={{ display: "flex", gap: 10, justifyContent: "center", marginTop: 6, flexWrap: "wrap" }}>
               <GreenButton onClick={() => setPopup(null)}>Add to Cart</GreenButton>
               <button onClick={() => setPopup(null)} style={{
-                background: "#B4552E", color: "#fff", border: "none", borderRadius: 14,
-                padding: "9px 22px", fontWeight: 700, fontSize: 13, cursor: "pointer",
+                background: "#B4552E", color: "#fff", border: "none", borderRadius: "clamp(10px,2vw,14px)",
+                padding: "clamp(7px,1.2vw,9px) clamp(14px,2.5vw,22px)", fontWeight: 700,
+                fontSize: "clamp(11px,1.1vw,13px)", cursor: "pointer", minHeight: 40,
               }}>Close</button>
             </div>
           </PopupCard>
@@ -90,18 +91,19 @@ export default function SanctuaryPage({ onHome, onAbout, onNatural, onWater, onS
       {showExplore && (
         <Modal onClose={() => setShowExplore(false)} closeOnBackdrop>
           <PopupCard width={520} style={{ gap: 14 }}>
-            <p style={{ fontFamily: "serif", fontWeight: 700, fontSize: 22, color: "#2E4A1F" }}>✦ Sanctuary Collection ✦</p>
-            <div style={{ fontFamily: "sans-serif", fontSize: 13, color: "#5A3A10", lineHeight: 1.7 }}>
+            <p style={{ fontFamily: "serif", fontWeight: 700, fontSize: "clamp(16px,1.8vw,22px)", color: "#2E4A1F" }}>✦ Sanctuary Collection ✦</p>
+            <div style={{ fontFamily: "sans-serif", fontSize: "clamp(12px,1.2vw,13px)", color: "#5A3A10", lineHeight: 1.7 }}>
               <p><strong>🌿 Wellness Kit</strong> — Essential oils, herbal soaps, and aroma diffuser.</p>
               <p><strong>☕ Morning Ritual Kit</strong> — Coffee, tea, honey &amp; ceramic mugs set.</p>
               <p><strong>🧺 Home Essentials Kit</strong> — Woven baskets, candles &amp; hand towels.</p>
               <p><strong>🎁 Gift of Culture Kit</strong> — Art prints, jewelry and notebook bundle.</p>
             </div>
-            <div style={{ display: "flex", gap: 10, justifyContent: "center", marginTop: 6 }}>
+            <div style={{ display: "flex", gap: 10, justifyContent: "center", marginTop: 6, flexWrap: "wrap" }}>
               <GreenButton onClick={() => { setShowExplore(false); onShowcase(); }}>Browse All</GreenButton>
               <button onClick={() => setShowExplore(false)} style={{
-                background: "#B4552E", color: "#fff", border: "none", borderRadius: 14,
-                padding: "9px 22px", fontWeight: 700, fontSize: 13, cursor: "pointer",
+                background: "#B4552E", color: "#fff", border: "none", borderRadius: "clamp(10px,2vw,14px)",
+                padding: "clamp(7px,1.2vw,9px) clamp(14px,2.5vw,22px)", fontWeight: 700,
+                fontSize: "clamp(11px,1.1vw,13px)", cursor: "pointer", minHeight: 40,
               }}>Close</button>
             </div>
           </PopupCard>
